@@ -1,0 +1,11 @@
+[package]
+name = "raytracing"
+version = "0.1.0"
+edition = "2024"
+authors = ["sallco <dcalderon918@gmail.com>"]
+description = "Diorama renderizado por raytracing en CPU"
+license = "UNLICENSED"
+publish = false
+
+[dependencies]
+raylib = "5.5.1"
