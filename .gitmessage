@@ -1,0 +1,4 @@
+# <tipo>: <resumen en imperativo>
+#
+# Tipos: feat, fix, docs, style, refactor, test, chore, perf, ci, revert
+# Mantener el resumen en español, sin punto final y sin cuerpo.
