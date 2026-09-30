@@ -1,0 +1,20 @@
+# Artefactos de Rust
+/target/
+*.pdb
+
+# Archivos de diagnóstico y perfiles
+*.log
+*.profraw
+*.profdata
+
+# Archivos del sistema operativo y editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Recursos generados para pruebas locales
+/renders/
+/capturas/
