@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 
 use raylib::prelude::*;
+use std::time::Instant;
 
 mod camera;
 mod generation;
@@ -23,9 +24,43 @@ fn main() {
 
     window.set_target_fps(60);
 
+    let image = Image::gen_image_color(WIDTH, HEIGHT, Color::BLACK);
+    let mut framebuffer = match window.load_texture_from_image(&thread, &image) {
+        Ok(texture) => texture,
+        Err(error) => {
+            eprintln!("No fue posible crear el framebuffer: {error}");
+            return;
+        }
+    };
+    let scene = scene::Scene::solar_system();
+    let camera = camera::Camera::overview();
+    let mut render_time_ms = 0.0;
+
     while !window.window_should_close() {
+        let started = Instant::now();
+        let pixels = renderer::render(&scene, camera, WIDTH as usize, HEIGHT as usize);
+        render_time_ms = started.elapsed().as_secs_f32() * 1_000.0;
+        if let Err(error) = framebuffer.update_texture(&pixels) {
+            eprintln!("No fue posible actualizar el framebuffer: {error}");
+            break;
+        }
+
         let mut drawing = window.begin_drawing(&thread);
-        drawing.clear_background(Color::new(5, 7, 15, 255));
-        drawing.draw_text("Raytracer CPU", 20, 20, 24, Color::RAYWHITE);
+        drawing.draw_texture(&framebuffer, 0, 0, Color::WHITE);
+        drawing.draw_rectangle(12, 12, 250, 64, Color::new(2, 5, 12, 205));
+        drawing.draw_text(
+            &format!("{} FPS", drawing.get_fps()),
+            24,
+            21,
+            20,
+            Color::new(135, 233, 255, 255),
+        );
+        drawing.draw_text(
+            &format!("Raytrace: {render_time_ms:.1} ms"),
+            24,
+            47,
+            16,
+            Color::RAYWHITE,
+        );
     }
 }
