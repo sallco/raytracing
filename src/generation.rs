@@ -187,7 +187,7 @@ fn saturn() -> CelestialBody {
     for z in -7..=7 {
         for x in -7..=7 {
             let distance = ((x * x + z * z) as f32).sqrt();
-            if (4.8..=7.3).contains(&distance) && hash(x, 0, z, 260) % 7 != 0 {
+            if (4.8..=7.3).contains(&distance) && !hash(x, 0, z, 260).is_multiple_of(7) {
                 voxels.push(Voxel {
                     position: GridPosition::new(x, 0, z),
                     material: material_id::SATURN_RING,
