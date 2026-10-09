@@ -11,13 +11,28 @@ const MAX_SECONDARY_BOUNCES: u8 = 2;
 
 pub(crate) fn render(scene: &Scene, camera: Camera, width: usize, height: usize) -> Vec<u8> {
     let mut pixels = vec![0; width * height * 4];
-    for y in 0..height {
-        for x in 0..width {
-            let color = trace(scene, camera.ray(x, y, width, height), 0);
-            let offset = (y * width + x) * 4;
-            pixels[offset..offset + 4].copy_from_slice(&color.to_rgba8());
+    let workers = std::thread::available_parallelism()
+        .map_or(1, usize::from)
+        .clamp(1, 12)
+        .min(height);
+    let rows_per_worker = height.div_ceil(workers);
+    let bytes_per_stripe = rows_per_worker * width * 4;
+
+    std::thread::scope(|scope| {
+        for (worker, stripe) in pixels.chunks_mut(bytes_per_stripe).enumerate() {
+            let start_y = worker * rows_per_worker;
+            scope.spawn(move || {
+                for (local_y, row) in stripe.chunks_mut(width * 4).enumerate() {
+                    let y = start_y + local_y;
+                    for x in 0..width {
+                        let color = trace(scene, camera.ray(x, y, width, height), 0);
+                        let offset = x * 4;
+                        row[offset..offset + 4].copy_from_slice(&color.to_rgba8());
+                    }
+                }
+            });
         }
-    }
+    });
     pixels
 }
 
