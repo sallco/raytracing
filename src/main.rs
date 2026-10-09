@@ -36,7 +36,6 @@ fn main() {
     let scene = scene::Scene::solar_system();
     let mut camera = camera::Camera::overview();
     let mut selection = None;
-    let mut render_time_ms = 0.0;
 
     while !window.window_should_close() {
         if window.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
@@ -66,7 +65,7 @@ fn main() {
 
         let started = Instant::now();
         let pixels = renderer::render(&scene, camera, WIDTH as usize, HEIGHT as usize);
-        render_time_ms = started.elapsed().as_secs_f32() * 1_000.0;
+        let render_time_ms = started.elapsed().as_secs_f32() * 1_000.0;
         if let Err(error) = framebuffer.update_texture(&pixels) {
             eprintln!("No fue posible actualizar el framebuffer: {error}");
             break;
