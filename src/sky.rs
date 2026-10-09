@@ -26,7 +26,7 @@ pub(crate) fn sample(direction: Vec3) -> Rgb {
 }
 
 fn hash(x: i32, y: i32, z: i32) -> u32 {
-    let mut value = (x as u32).wrapping_mul(0x45d9_f3b)
+    let mut value = (x as u32).wrapping_mul(0x045d_9f3b)
         ^ (y as u32).wrapping_mul(0x119d_e1f3)
         ^ (z as u32).wrapping_mul(0x3449_5cf5);
     value ^= value >> 16;
