@@ -91,7 +91,7 @@ impl Div<f32> for Vec3 {
     type Output = Self;
 
     fn div(self, rhs: f32) -> Self::Output {
-        self * rhs.recip()
+        Self::new(self.x / rhs, self.y / rhs, self.z / rhs)
     }
 }
 
