@@ -6,6 +6,7 @@ mod camera;
 mod geometry;
 mod material;
 mod math;
+mod world;
 
 const WIDTH: i32 = 960;
 const HEIGHT: i32 = 540;
