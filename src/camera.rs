@@ -27,7 +27,7 @@ impl Camera {
             target: Vec3::ZERO,
             yaw: -0.2,
             pitch: 1.12,
-            distance: 92.0,
+            distance: 125.0,
             vertical_fov: 42.0_f32.to_radians(),
         }
     }
