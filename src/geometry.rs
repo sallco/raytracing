@@ -18,7 +18,7 @@ impl Aabb {
     }
 
     pub(crate) fn intersect(self, ray: Ray, maximum: f32) -> Option<(f32, f32)> {
-        let mut near = RAY_EPSILON;
+        let mut near = f32::NEG_INFINITY;
         let mut far = maximum;
 
         for axis in 0..3 {
@@ -47,7 +47,11 @@ impl Aabb {
             }
         }
 
-        Some((near, far))
+        if far < RAY_EPSILON {
+            None
+        } else {
+            Some((if near >= RAY_EPSILON { near } else { far }, far))
+        }
     }
 
     pub(crate) fn normal_at(self, point: Vec3) -> Vec3 {

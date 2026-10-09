@@ -66,5 +66,38 @@ fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
         color = color.mix(reflected, strength.clamp(0.0, 0.96));
     }
 
+    if material.transparency > 0.0
+        && depth < MAX_SECONDARY_BOUNCES
+        && let Some((direction, outward_normal)) = refract(
+            ray.direction,
+            hit.normal,
+            material.refractive_index,
+        )
+    {
+        let transmitted = trace(
+            scene,
+            Ray {
+                origin: hit.point - outward_normal * SURFACE_BIAS,
+                direction,
+            },
+            depth + 1,
+        );
+        color = color.mix(transmitted, material.transparency);
+    }
+
     color
+}
+
+fn refract(direction: crate::math::Vec3, normal: crate::math::Vec3, index: f32) -> Option<(crate::math::Vec3, crate::math::Vec3)> {
+    let entering = direction.dot(normal) < 0.0;
+    let outward_normal = if entering { normal } else { -normal };
+    let ratio = if entering { index.recip() } else { index };
+    let cosine = (-direction).dot(outward_normal).clamp(0.0, 1.0);
+    let discriminant = 1.0 - ratio * ratio * (1.0 - cosine * cosine);
+    (discriminant >= 0.0).then(|| {
+        (
+            (direction * ratio + outward_normal * (ratio * cosine - discriminant.sqrt())).normalized(),
+            outward_normal,
+        )
+    })
 }
