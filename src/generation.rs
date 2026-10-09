@@ -100,7 +100,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
         ),
         asteroid_belt(),
     ];
-    bodies.push(lunar_terrain(bodies[3].center + Vec3::new(5.0, -1.4, 1.0)));
+    bodies.push(lunar_terrain(Vec3::new(-43.0, -3.5, 35.0)));
     bodies.push(space_station());
     bodies
 }
