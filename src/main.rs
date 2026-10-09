@@ -7,6 +7,7 @@ mod generation;
 mod geometry;
 mod material;
 mod math;
+mod scene;
 mod world;
 
 const WIDTH: i32 = 960;
