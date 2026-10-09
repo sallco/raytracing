@@ -129,6 +129,7 @@ fn body(
         kind,
         center,
         focus_distance,
+        1.0,
         materials[0],
         sphere_surface(radius, materials, seed),
     )
@@ -190,6 +191,7 @@ fn saturn() -> CelestialBody {
         "Gigante con anillos",
         orbital_position(34.0, 2.35),
         13.0,
+        1.0,
         material_id::SATURN,
         voxels,
     )

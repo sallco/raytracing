@@ -69,7 +69,8 @@ impl Scene {
             };
 
             let start = local_ray.at(entry + 0.0001);
-            let mut chunk_position = GridPosition::from_point(start);
+            let chunk_extent = CHUNK_SIZE as f32 * body.voxel_scale;
+            let mut chunk_position = GridPosition::from_point(start, chunk_extent);
             let mut next_crossing = [0.0; 3];
             let mut crossing_delta = [0.0; 3];
             let mut steps = [0; 3];
@@ -88,9 +89,9 @@ impl Scene {
                     _ => unreachable!(),
                 };
                 let boundary_cell = if steps[axis] > 0 { cell + 1 } else { cell };
-                let boundary = boundary_cell as f32 * CHUNK_SIZE as f32;
+                let boundary = boundary_cell as f32 * chunk_extent;
                 next_crossing[axis] = (boundary - local_ray.origin.component(axis)) / direction;
-                crossing_delta[axis] = CHUNK_SIZE as f32 / direction.abs();
+                crossing_delta[axis] = chunk_extent / direction.abs();
             }
 
             let mut traversal_distance = entry;
@@ -99,7 +100,7 @@ impl Scene {
                     debug_assert!(chunk.bounds.intersect(local_ray, closest).is_some());
                     for &voxel_index in &chunk.voxel_indices {
                         let voxel = body.voxels[voxel_index];
-                        let bounds = voxel.bounds();
+                        let bounds = voxel.bounds(body.voxel_scale);
                         let Some((distance, _)) = bounds.intersect(local_ray, closest) else {
                             continue;
                         };

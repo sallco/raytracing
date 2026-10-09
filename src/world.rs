@@ -20,11 +20,11 @@ impl GridPosition {
         Vec3::new(self.x as f32, self.y as f32, self.z as f32)
     }
 
-    pub(crate) fn from_point(point: Vec3) -> Self {
+    pub(crate) fn from_point(point: Vec3, chunk_extent: f32) -> Self {
         Self::new(
-            (point.x / CHUNK_SIZE as f32).floor() as i32,
-            (point.y / CHUNK_SIZE as f32).floor() as i32,
-            (point.z / CHUNK_SIZE as f32).floor() as i32,
+            (point.x / chunk_extent).floor() as i32,
+            (point.y / chunk_extent).floor() as i32,
+            (point.z / chunk_extent).floor() as i32,
         )
     }
 
@@ -53,9 +53,9 @@ pub(crate) struct Voxel {
 }
 
 impl Voxel {
-    pub(crate) fn bounds(self) -> Aabb {
-        let minimum = self.position.as_vec3();
-        Aabb::new(minimum, minimum + Vec3::new(1.0, 1.0, 1.0))
+    pub(crate) fn bounds(self, scale: f32) -> Aabb {
+        let minimum = self.position.as_vec3() * scale;
+        Aabb::new(minimum, minimum + Vec3::new(scale, scale, scale))
     }
 }
 
@@ -71,6 +71,7 @@ pub(crate) struct CelestialBody {
     pub(crate) kind: &'static str,
     pub(crate) center: Vec3,
     pub(crate) focus_distance: f32,
+    pub(crate) voxel_scale: f32,
     pub(crate) predominant_material: usize,
     pub(crate) bounds: Aabb,
     pub(crate) voxels: Vec<Voxel>,
@@ -83,6 +84,7 @@ impl CelestialBody {
         kind: &'static str,
         center: Vec3,
         focus_distance: f32,
+        voxel_scale: f32,
         predominant_material: usize,
         voxels: Vec<Voxel>,
     ) -> Self {
@@ -95,30 +97,26 @@ impl CelestialBody {
                 .entry(voxel.position.chunk())
                 .or_default()
                 .push(index);
-            let position = voxel.position.as_vec3();
+            let position = voxel.position.as_vec3() * voxel_scale;
             minimum.x = minimum.x.min(position.x);
             minimum.y = minimum.y.min(position.y);
             minimum.z = minimum.z.min(position.z);
-            maximum.x = maximum.x.max(position.x + 1.0);
-            maximum.y = maximum.y.max(position.y + 1.0);
-            maximum.z = maximum.z.max(position.z + 1.0);
+            maximum.x = maximum.x.max(position.x + voxel_scale);
+            maximum.y = maximum.y.max(position.y + voxel_scale);
+            maximum.z = maximum.z.max(position.z + voxel_scale);
         }
 
         let chunks = grouped
             .into_iter()
             .map(|(position, voxel_indices)| {
-                let minimum = position.as_vec3() * CHUNK_SIZE as f32;
+                let chunk_extent = CHUNK_SIZE as f32 * voxel_scale;
+                let minimum = position.as_vec3() * chunk_extent;
                 (
                     position,
                     Chunk {
                         bounds: Aabb::new(
                             minimum,
-                            minimum
-                                + Vec3::new(
-                                    CHUNK_SIZE as f32,
-                                    CHUNK_SIZE as f32,
-                                    CHUNK_SIZE as f32,
-                                ),
+                            minimum + Vec3::new(chunk_extent, chunk_extent, chunk_extent),
                         ),
                         voxel_indices,
                     },
@@ -131,6 +129,7 @@ impl CelestialBody {
             kind,
             center,
             focus_distance,
+            voxel_scale,
             predominant_material,
             bounds: Aabb::new(minimum, maximum),
             voxels,
