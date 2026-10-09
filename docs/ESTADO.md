@@ -14,7 +14,7 @@ Está implementado:
 - Luz directa del Sol, ambiente tenue, sombras y halo solar.
 - Reflexión y refracción limitadas a dos rebotes secundarios.
 - Skybox procedural con estrellas y nebulosa.
-- Cámara orbital con arrastre, zoom y retorno a vista general con `Esc`.
+- Cámara orbital con arrastre, zoom y transición suave a la vista general con `Esc`.
 - Selección de cuerpos con flechas y transición suave a una vista de detalle.
 - HUD con FPS, tiempo de render, nombre, tipo, voxeles y material.
 - Escala visual independiente de la resolución voxel de cada planeta.
