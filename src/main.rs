@@ -18,6 +18,11 @@ const WIDTH: i32 = 960;
 const HEIGHT: i32 = 540;
 
 fn main() {
+    if std::env::args().any(|argument| argument == "--benchmark") {
+        benchmark();
+        return;
+    }
+
     let (mut window, thread) = raylib::init()
         .size(WIDTH, HEIGHT)
         .title("Diorama solar voxelizado")
@@ -90,4 +95,19 @@ fn main() {
         );
         hud::draw(&mut drawing, &scene, selection);
     }
+}
+
+fn benchmark() {
+    let scene = scene::Scene::solar_system();
+    let camera = camera::Camera::overview();
+    let started = Instant::now();
+    let pixels = renderer::render(&scene, camera, WIDTH as usize, HEIGHT as usize);
+    std::hint::black_box(pixels);
+    let elapsed = started.elapsed().as_secs_f64();
+    println!(
+        "{} voxeles | {:.1} ms | {:.2} FPS equivalentes",
+        scene.total_voxels(),
+        elapsed * 1_000.0,
+        elapsed.recip()
+    );
 }
