@@ -2,6 +2,8 @@
 
 use raylib::prelude::*;
 
+mod math;
+
 const WIDTH: i32 = 960;
 const HEIGHT: i32 = 540;
 
