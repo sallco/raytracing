@@ -1,5 +1,7 @@
 use crate::{
+    camera::Ray,
     generation::{generate_solar_system, material_id},
+    geometry::Hit,
     material::{Material, Rgb},
     math::Vec3,
     world::CelestialBody,
@@ -55,5 +57,46 @@ impl Scene {
 
     pub(crate) fn total_voxels(&self) -> usize {
         self.bodies.iter().map(CelestialBody::voxel_count).sum()
+    }
+
+    pub(crate) fn intersect(&self, ray: Ray, maximum: f32) -> Option<Hit> {
+        let mut closest = maximum;
+        let mut result = None;
+
+        for body in &self.bodies {
+            let local_ray = Ray {
+                origin: ray.origin - body.center,
+                direction: ray.direction,
+            };
+            if body.bounds.intersect(local_ray, closest).is_none() {
+                continue;
+            }
+
+            for chunk in &body.chunks {
+                if chunk.bounds.intersect(local_ray, closest).is_none() {
+                    continue;
+                }
+                for &voxel_index in &chunk.voxel_indices {
+                    let voxel = body.voxels[voxel_index];
+                    let bounds = voxel.bounds();
+                    let Some((distance, _)) = bounds.intersect(local_ray, closest) else {
+                        continue;
+                    };
+                    closest = distance;
+                    let local_point = local_ray.at(distance);
+                    result = Some(Hit {
+                        distance,
+                        point: local_point + body.center,
+                        normal: bounds.normal_at(local_point),
+                        material: voxel.material,
+                    });
+                }
+            }
+        }
+        result
+    }
+
+    pub(crate) fn occluded(&self, ray: Ray, maximum: f32) -> bool {
+        self.intersect(ray, maximum).is_some()
     }
 }
