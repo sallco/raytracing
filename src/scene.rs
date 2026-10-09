@@ -134,6 +134,9 @@ impl Scene {
     }
 
     pub(crate) fn occluded(&self, ray: Ray, maximum: f32) -> bool {
-        self.intersect(ray, maximum).is_some()
+        self.intersect(ray, maximum).is_some_and(|hit| {
+            let emission = self.materials[hit.material].emission;
+            emission.r <= f32::EPSILON && emission.g <= f32::EPSILON && emission.b <= f32::EPSILON
+        })
     }
 }
