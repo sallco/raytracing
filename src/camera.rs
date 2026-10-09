@@ -24,7 +24,7 @@ pub(crate) struct Camera {
 impl Camera {
     pub(crate) fn overview() -> Self {
         Self {
-            target: Vec3::ZERO,
+            target: Vec3::new(0.0, 0.0, 6.0),
             yaw: -0.2,
             pitch: 1.12,
             distance: 125.0,
