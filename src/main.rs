@@ -33,10 +33,22 @@ fn main() {
         }
     };
     let scene = scene::Scene::solar_system();
-    let camera = camera::Camera::overview();
+    let mut camera = camera::Camera::overview();
     let mut render_time_ms = 0.0;
 
     while !window.window_should_close() {
+        if window.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
+            let delta = window.get_mouse_delta();
+            camera.orbit(delta.x, delta.y);
+        }
+        let wheel = window.get_mouse_wheel_move();
+        if wheel.abs() > f32::EPSILON {
+            camera.zoom(wheel);
+        }
+        if window.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
+            camera.reset();
+        }
+
         let started = Instant::now();
         let pixels = renderer::render(&scene, camera, WIDTH as usize, HEIGHT as usize);
         render_time_ms = started.elapsed().as_secs_f32() * 1_000.0;
