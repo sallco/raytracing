@@ -79,7 +79,24 @@ impl Camera {
         true
     }
 
-    pub(crate) fn reset(&mut self) {
-        *self = Self::overview();
+    pub(crate) fn transition_to_overview(&mut self) -> bool {
+        let overview = Self::overview();
+        let yaw_delta = (overview.yaw - self.yaw + std::f32::consts::PI)
+            .rem_euclid(std::f32::consts::TAU)
+            - std::f32::consts::PI;
+        let settled = (self.target - overview.target).length() < 0.01
+            && (self.distance - overview.distance).abs() < 0.01
+            && yaw_delta.abs() < 0.001
+            && (self.pitch - overview.pitch).abs() < 0.001;
+        if settled {
+            *self = overview;
+            return false;
+        }
+
+        self.target = self.target.lerp(overview.target, 0.08);
+        self.distance += (overview.distance - self.distance) * 0.08;
+        self.yaw += yaw_delta * 0.08;
+        self.pitch += (overview.pitch - self.pitch) * 0.08;
+        true
     }
 }
