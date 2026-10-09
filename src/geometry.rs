@@ -13,10 +13,6 @@ impl Aabb {
         Self { min, max }
     }
 
-    pub(crate) fn translated(self, offset: Vec3) -> Self {
-        Self::new(self.min + offset, self.max + offset)
-    }
-
     pub(crate) fn intersect(self, ray: Ray, maximum: f32) -> Option<(f32, f32)> {
         let mut near = f32::NEG_INFINITY;
         let mut far = maximum;
@@ -73,7 +69,6 @@ impl Aabb {
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct Hit {
-    pub(crate) distance: f32,
     pub(crate) point: Vec3,
     pub(crate) normal: Vec3,
     pub(crate) material: usize,

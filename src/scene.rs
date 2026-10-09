@@ -84,7 +84,6 @@ impl Scene {
                     closest = distance;
                     let local_point = local_ray.at(distance);
                     result = Some(Hit {
-                        distance,
                         point: local_point + body.center,
                         normal: bounds.normal_at(local_point),
                         material: voxel.material,
