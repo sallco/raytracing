@@ -32,16 +32,13 @@ impl Scene {
             Material::matte("Suelo marciano", Rgb::new(0.62, 0.16, 0.06), 0.92),
             Material::matte("Atmósfera de Júpiter", Rgb::new(0.75, 0.47, 0.28), 0.72),
             Material::matte("Atmósfera de Saturno", Rgb::new(0.82, 0.68, 0.39), 0.76),
-            Material::matte("Hielo de los anillos", Rgb::new(0.72, 0.68, 0.57), 0.44),
+            Material::matte("Hielo de los anillos", Rgb::new(0.72, 0.68, 0.57), 0.44)
+                .reflective(0.1, 0.15)
+                .transparent(0.08, 1.31),
             Material::matte("Hielo de Urano", Rgb::new(0.2, 0.72, 0.76), 0.4),
             Material::matte("Hielo de Neptuno", Rgb::new(0.08, 0.24, 0.83), 0.36),
-            Material::matte("Roca de asteroide", Rgb::new(0.32, 0.27, 0.23), 1.0),
-            Material::matte("Regolito lunar", Rgb::new(0.46, 0.44, 0.42), 0.96),
-            Material::matte("Metal pulido", Rgb::new(0.55, 0.58, 0.62), 0.12).reflective(0.9, 0.72),
-            Material::matte("Cristal de hielo", Rgb::new(0.58, 0.82, 0.92), 0.08)
-                .transparent(0.82, 1.31),
         ];
-        debug_assert_eq!(materials.len() - 1, material_id::GLASS);
+        debug_assert_eq!(materials.len() - 1, material_id::NEPTUNE);
 
         Self {
             materials,
