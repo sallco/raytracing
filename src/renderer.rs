@@ -38,9 +38,22 @@ pub(crate) fn render(scene: &Scene, camera: Camera, width: usize, height: usize)
 
 fn trace(scene: &Scene, ray: Ray, depth: u8) -> Rgb {
     scene.intersect(ray, f32::INFINITY).map_or_else(
-        || sky::sample(ray.direction),
+        || background(scene, ray),
         |hit| shade(scene, ray, hit, depth),
     )
+}
+
+fn background(scene: &Scene, ray: Ray) -> Rgb {
+    let mut color = sky::sample(ray.direction);
+    let to_sun = scene.light.position - ray.origin;
+    let projection = to_sun.dot(ray.direction);
+    if projection > 0.0 {
+        let closest = ray.origin + ray.direction * projection;
+        let distance = (closest - scene.light.position).length();
+        let halo = 2.6 / (1.0 + (distance / 5.5).powi(4));
+        color += Rgb::new(1.0, 0.42, 0.06) * halo;
+    }
+    color
 }
 
 fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
