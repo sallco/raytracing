@@ -1,14 +1,14 @@
 # Raytracing
 
 Diorama 3D renderizado mediante raytracing por CPU para el curso de Gráficas.
-La primera versión presenta un sistema solar estático formado por 5173 cubos de
+La primera versión presenta un sistema solar estático formado por 6211 cubos de
 superficie. `raylib` se limita a ventana, entrada, texto y presentación del
 framebuffer; la cámara, intersecciones, iluminación y efectos se calculan en CPU.
 
-La escena contiene el Sol, los ocho planetas, anillos de Saturno, un cinturón de
-asteroides, terreno lunar procedural y una estación espacial. Incluye cielo
-estelar procedural, luz solar directa, ambiente tenue, sombras, reflexión y
-refracción con un máximo de dos rebotes secundarios.
+La escena se concentra exclusivamente en el Sol y los ocho planetas, incluidos
+los anillos de Saturno. Incluye cielo estelar procedural, halo solar, luz directa,
+ambiente tenue, sombras, reflexión y refracción con un máximo de dos rebotes
+secundarios.
 
 ## Entorno
 
@@ -53,6 +53,7 @@ enfoque.
 ## Arquitectura
 
 - Solo se almacenan voxeles expuestos de cada cuerpo.
+- La escala visual está desacoplada de la resolución voxel de cada planeta.
 - Los voxeles se agrupan en chunks locales de `8×8×8`.
 - Cada rayo descarta cuerpos por AABB y recorre sus chunks mediante DDA.
 - El framebuffer se divide en hasta 12 franjas usando `std::thread::scope`.
