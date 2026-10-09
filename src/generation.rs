@@ -25,6 +25,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             Vec3::ZERO,
             15.0,
             6.5,
+            12.0,
             &[material_id::SUN],
             11,
         ),
@@ -34,6 +35,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             10.0,
             0.25,
             1.35,
+            5.0,
             material_id::MERCURY,
             21,
         ),
@@ -43,6 +45,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             14.0,
             2.55,
             1.9,
+            6.0,
             material_id::VENUS,
             22,
         ),
@@ -52,6 +55,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             orbital_position(18.0, 4.4),
             6.5,
             2.1,
+            7.0,
             &[material_id::EARTH_OCEAN, material_id::EARTH_LAND],
             23,
         ),
@@ -61,6 +65,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             22.0,
             5.55,
             1.65,
+            5.5,
             material_id::MARS,
             24,
         ),
@@ -70,6 +75,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             30.0,
             1.15,
             4.3,
+            10.0,
             material_id::JUPITER,
             25,
         ),
@@ -80,6 +86,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             38.0,
             3.55,
             3.0,
+            8.0,
             material_id::URANUS,
             27,
         ),
@@ -89,6 +96,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             42.0,
             5.0,
             2.85,
+            8.0,
             material_id::NEPTUNE,
             28,
         ),
@@ -100,7 +108,8 @@ fn body_at_angle(
     kind: &'static str,
     orbit: f32,
     angle: f32,
-    radius: f32,
+    visual_radius: f32,
+    detail_radius: f32,
     material: usize,
     seed: u32,
 ) -> CelestialBody {
@@ -108,8 +117,9 @@ fn body_at_angle(
         name,
         kind,
         orbital_position(orbit, angle),
-        radius * 3.0 + 2.0,
-        radius,
+        visual_radius * 3.0 + 2.0,
+        visual_radius,
+        detail_radius,
         &[material],
         seed,
     )
@@ -120,7 +130,8 @@ fn body(
     kind: &'static str,
     center: Vec3,
     focus_distance: f32,
-    radius: f32,
+    visual_radius: f32,
+    detail_radius: f32,
     materials: &[usize],
     seed: u32,
 ) -> CelestialBody {
@@ -129,9 +140,9 @@ fn body(
         kind,
         center,
         focus_distance,
-        1.0,
+        visual_radius / detail_radius,
         materials[0],
-        sphere_surface(radius, materials, seed),
+        sphere_surface(detail_radius, materials, seed),
     )
 }
 
@@ -174,11 +185,13 @@ fn sphere_surface(radius: f32, materials: &[usize], seed: u32) -> Vec<Voxel> {
 }
 
 fn saturn() -> CelestialBody {
-    let mut voxels = sphere_surface(3.7, &[material_id::SATURN], 26);
-    for z in -7..=7 {
-        for x in -7..=7 {
+    const DETAIL_RADIUS: f32 = 9.0;
+    const VOXEL_SCALE: f32 = 3.7 / DETAIL_RADIUS;
+    let mut voxels = sphere_surface(DETAIL_RADIUS, &[material_id::SATURN], 26);
+    for z in -18..=18 {
+        for x in -18..=18 {
             let distance = ((x * x + z * z) as f32).sqrt();
-            if (4.8..=7.3).contains(&distance) && !hash(x, 0, z, 260).is_multiple_of(7) {
+            if (11.7..=17.8).contains(&distance) && !hash(x, 0, z, 260).is_multiple_of(7) {
                 voxels.push(Voxel {
                     position: GridPosition::new(x, 0, z),
                     material: material_id::SATURN_RING,
@@ -191,7 +204,7 @@ fn saturn() -> CelestialBody {
         "Gigante con anillos",
         orbital_position(34.0, 2.35),
         13.0,
-        1.0,
+        VOXEL_SCALE,
         material_id::SATURN,
         voxels,
     )
