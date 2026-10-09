@@ -20,6 +20,23 @@ impl GridPosition {
         Vec3::new(self.x as f32, self.y as f32, self.z as f32)
     }
 
+    pub(crate) fn from_point(point: Vec3) -> Self {
+        Self::new(
+            (point.x / CHUNK_SIZE as f32).floor() as i32,
+            (point.y / CHUNK_SIZE as f32).floor() as i32,
+            (point.z / CHUNK_SIZE as f32).floor() as i32,
+        )
+    }
+
+    pub(crate) fn stepped(self, axis: usize, amount: i32) -> Self {
+        match axis {
+            0 => Self::new(self.x + amount, self.y, self.z),
+            1 => Self::new(self.x, self.y + amount, self.z),
+            2 => Self::new(self.x, self.y, self.z + amount),
+            _ => unreachable!("un eje tridimensional solo puede ser 0, 1 o 2"),
+        }
+    }
+
     fn chunk(self) -> Self {
         Self::new(
             self.x.div_euclid(CHUNK_SIZE),
@@ -57,7 +74,7 @@ pub(crate) struct CelestialBody {
     pub(crate) predominant_material: usize,
     pub(crate) bounds: Aabb,
     pub(crate) voxels: Vec<Voxel>,
-    pub(crate) chunks: Vec<Chunk>,
+    pub(crate) chunks: BTreeMap<GridPosition, Chunk>,
 }
 
 impl CelestialBody {
@@ -91,14 +108,21 @@ impl CelestialBody {
             .into_iter()
             .map(|(position, voxel_indices)| {
                 let minimum = position.as_vec3() * CHUNK_SIZE as f32;
-                Chunk {
-                    bounds: Aabb::new(
-                        minimum,
-                        minimum
-                            + Vec3::new(CHUNK_SIZE as f32, CHUNK_SIZE as f32, CHUNK_SIZE as f32),
-                    ),
-                    voxel_indices,
-                }
+                (
+                    position,
+                    Chunk {
+                        bounds: Aabb::new(
+                            minimum,
+                            minimum
+                                + Vec3::new(
+                                    CHUNK_SIZE as f32,
+                                    CHUNK_SIZE as f32,
+                                    CHUNK_SIZE as f32,
+                                ),
+                        ),
+                        voxel_indices,
+                    },
+                )
             })
             .collect();
 

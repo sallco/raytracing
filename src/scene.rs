@@ -4,7 +4,7 @@ use crate::{
     geometry::Hit,
     material::{Material, Rgb},
     math::Vec3,
-    world::CelestialBody,
+    world::{CHUNK_SIZE, CelestialBody, GridPosition},
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -67,28 +67,67 @@ impl Scene {
                 origin: ray.origin - body.center,
                 direction: ray.direction,
             };
-            if body.bounds.intersect(local_ray, closest).is_none() {
+            let Some((entry, exit)) = body.bounds.intersect(local_ray, closest) else {
                 continue;
-            }
+            };
 
-            for chunk in &body.chunks {
-                if chunk.bounds.intersect(local_ray, closest).is_none() {
+            let start = local_ray.at(entry + 0.0001);
+            let mut chunk_position = GridPosition::from_point(start);
+            let mut next_crossing = [0.0; 3];
+            let mut crossing_delta = [0.0; 3];
+            let mut steps = [0; 3];
+            for axis in 0..3 {
+                let direction = local_ray.direction.component(axis);
+                if direction.abs() < f32::EPSILON {
+                    next_crossing[axis] = f32::INFINITY;
+                    crossing_delta[axis] = f32::INFINITY;
                     continue;
                 }
-                for &voxel_index in &chunk.voxel_indices {
-                    let voxel = body.voxels[voxel_index];
-                    let bounds = voxel.bounds();
-                    let Some((distance, _)) = bounds.intersect(local_ray, closest) else {
-                        continue;
-                    };
-                    closest = distance;
-                    let local_point = local_ray.at(distance);
-                    result = Some(Hit {
-                        point: local_point + body.center,
-                        normal: bounds.normal_at(local_point),
-                        material: voxel.material,
-                    });
+                steps[axis] = if direction > 0.0 { 1 } else { -1 };
+                let cell = match axis {
+                    0 => chunk_position.x,
+                    1 => chunk_position.y,
+                    2 => chunk_position.z,
+                    _ => unreachable!(),
+                };
+                let boundary_cell = if steps[axis] > 0 { cell + 1 } else { cell };
+                let boundary = boundary_cell as f32 * CHUNK_SIZE as f32;
+                next_crossing[axis] = (boundary - local_ray.origin.component(axis)) / direction;
+                crossing_delta[axis] = CHUNK_SIZE as f32 / direction.abs();
+            }
+
+            let mut traversal_distance = entry;
+            while traversal_distance <= exit && traversal_distance <= closest {
+                if let Some(chunk) = body.chunks.get(&chunk_position) {
+                    debug_assert!(chunk.bounds.intersect(local_ray, closest).is_some());
+                    for &voxel_index in &chunk.voxel_indices {
+                        let voxel = body.voxels[voxel_index];
+                        let bounds = voxel.bounds();
+                        let Some((distance, _)) = bounds.intersect(local_ray, closest) else {
+                            continue;
+                        };
+                        closest = distance;
+                        let local_point = local_ray.at(distance);
+                        result = Some(Hit {
+                            point: local_point + body.center,
+                            normal: bounds.normal_at(local_point),
+                            material: voxel.material,
+                        });
+                    }
                 }
+
+                let axis = if next_crossing[0] <= next_crossing[1]
+                    && next_crossing[0] <= next_crossing[2]
+                {
+                    0
+                } else if next_crossing[1] <= next_crossing[2] {
+                    1
+                } else {
+                    2
+                };
+                traversal_distance = next_crossing[axis];
+                next_crossing[axis] += crossing_delta[axis];
+                chunk_position = chunk_position.stepped(axis, steps[axis]);
             }
         }
         result
