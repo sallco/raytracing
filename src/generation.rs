@@ -208,13 +208,13 @@ fn saturn() -> CelestialBody {
 fn asteroid_belt() -> CelestialBody {
     let mut positions = BTreeSet::new();
     let mut state = 0x5a17_3c91_u32;
-    while positions.len() < 2_400 {
+    while positions.len() < 3_800 {
         state = xorshift(state);
         let angle = state as f32 / u32::MAX as f32 * std::f32::consts::TAU;
         state = xorshift(state);
-        let radius = 25.0 + state as f32 / u32::MAX as f32 * 3.2;
+        let radius = 24.5 + state as f32 / u32::MAX as f32 * 4.5;
         state = xorshift(state);
-        let y = (state % 5) as i32 - 2;
+        let y = (state % 7) as i32 - 3;
         positions.insert(GridPosition::new(
             (angle.cos() * radius).round() as i32,
             y,
