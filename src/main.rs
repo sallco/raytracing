@@ -34,6 +34,7 @@ fn main() {
     };
     let scene = scene::Scene::solar_system();
     let mut camera = camera::Camera::overview();
+    let mut selection = None;
     let mut render_time_ms = 0.0;
 
     while !window.window_should_close() {
@@ -46,7 +47,20 @@ fn main() {
             camera.zoom(wheel);
         }
         if window.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
+            selection = None;
             camera.reset();
+        }
+        if window.is_key_pressed(KeyboardKey::KEY_RIGHT) {
+            selection = Some(selection.map_or(0, |index| (index + 1) % scene.bodies.len()));
+        }
+        if window.is_key_pressed(KeyboardKey::KEY_LEFT) {
+            selection = Some(selection.map_or(scene.bodies.len() - 1, |index| {
+                (index + scene.bodies.len() - 1) % scene.bodies.len()
+            }));
+        }
+        if let Some(index) = selection {
+            let body = &scene.bodies[index];
+            camera.focus(body.center, body.focus_distance);
         }
 
         let started = Instant::now();
