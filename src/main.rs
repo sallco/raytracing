@@ -2,6 +2,7 @@
 
 use raylib::prelude::*;
 
+mod camera;
 mod math;
 
 const WIDTH: i32 = 960;
