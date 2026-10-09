@@ -74,7 +74,10 @@ impl CelestialBody {
         let mut maximum = Vec3::new(f32::NEG_INFINITY, f32::NEG_INFINITY, f32::NEG_INFINITY);
 
         for (index, voxel) in voxels.iter().enumerate() {
-            grouped.entry(voxel.position.chunk()).or_default().push(index);
+            grouped
+                .entry(voxel.position.chunk())
+                .or_default()
+                .push(index);
             let position = voxel.position.as_vec3();
             minimum.x = minimum.x.min(position.x);
             minimum.y = minimum.y.min(position.y);
@@ -91,7 +94,8 @@ impl CelestialBody {
                 Chunk {
                     bounds: Aabb::new(
                         minimum,
-                        minimum + Vec3::new(CHUNK_SIZE as f32, CHUNK_SIZE as f32, CHUNK_SIZE as f32),
+                        minimum
+                            + Vec3::new(CHUNK_SIZE as f32, CHUNK_SIZE as f32, CHUNK_SIZE as f32),
                     ),
                     voxel_indices,
                 }

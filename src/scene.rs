@@ -37,8 +37,7 @@ impl Scene {
             Material::matte("Hielo de Neptuno", Rgb::new(0.08, 0.24, 0.83), 0.36),
             Material::matte("Roca de asteroide", Rgb::new(0.22, 0.18, 0.16), 1.0),
             Material::matte("Regolito lunar", Rgb::new(0.46, 0.44, 0.42), 0.96),
-            Material::matte("Metal pulido", Rgb::new(0.55, 0.58, 0.62), 0.12)
-                .reflective(0.9, 0.72),
+            Material::matte("Metal pulido", Rgb::new(0.55, 0.58, 0.62), 0.12).reflective(0.9, 0.72),
             Material::matte("Cristal de hielo", Rgb::new(0.58, 0.82, 0.92), 0.08)
                 .transparent(0.82, 1.31),
         ];

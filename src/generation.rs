@@ -25,9 +25,33 @@ pub(crate) mod material_id {
 
 pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
     let mut bodies = vec![
-        body("Sol", "Estrella", Vec3::ZERO, 15.0, 6.5, &[material_id::SUN], 11),
-        body_at_angle("Mercurio", "Planeta rocoso", 10.0, 0.25, 1.35, material_id::MERCURY, 21),
-        body_at_angle("Venus", "Planeta rocoso", 14.0, 2.55, 1.9, material_id::VENUS, 22),
+        body(
+            "Sol",
+            "Estrella",
+            Vec3::ZERO,
+            15.0,
+            6.5,
+            &[material_id::SUN],
+            11,
+        ),
+        body_at_angle(
+            "Mercurio",
+            "Planeta rocoso",
+            10.0,
+            0.25,
+            1.35,
+            material_id::MERCURY,
+            21,
+        ),
+        body_at_angle(
+            "Venus",
+            "Planeta rocoso",
+            14.0,
+            2.55,
+            1.9,
+            material_id::VENUS,
+            22,
+        ),
         body(
             "Tierra",
             "Planeta oceánico",
@@ -37,11 +61,43 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             &[material_id::EARTH_OCEAN, material_id::EARTH_LAND],
             23,
         ),
-        body_at_angle("Marte", "Planeta rocoso", 22.0, 5.55, 1.65, material_id::MARS, 24),
-        body_at_angle("Júpiter", "Gigante gaseoso", 30.0, 1.15, 4.3, material_id::JUPITER, 25),
+        body_at_angle(
+            "Marte",
+            "Planeta rocoso",
+            22.0,
+            5.55,
+            1.65,
+            material_id::MARS,
+            24,
+        ),
+        body_at_angle(
+            "Júpiter",
+            "Gigante gaseoso",
+            30.0,
+            1.15,
+            4.3,
+            material_id::JUPITER,
+            25,
+        ),
         saturn(),
-        body_at_angle("Urano", "Gigante helado", 38.0, 3.55, 3.0, material_id::URANUS, 27),
-        body_at_angle("Neptuno", "Gigante helado", 42.0, 5.0, 2.85, material_id::NEPTUNE, 28),
+        body_at_angle(
+            "Urano",
+            "Gigante helado",
+            38.0,
+            3.55,
+            3.0,
+            material_id::URANUS,
+            27,
+        ),
+        body_at_angle(
+            "Neptuno",
+            "Gigante helado",
+            42.0,
+            5.0,
+            2.85,
+            material_id::NEPTUNE,
+            28,
+        ),
         asteroid_belt(),
     ];
     bodies.push(lunar_terrain(bodies[3].center + Vec3::new(5.0, -1.4, 1.0)));
@@ -58,7 +114,15 @@ fn body_at_angle(
     material: usize,
     seed: u32,
 ) -> CelestialBody {
-    body(name, kind, orbital_position(orbit, angle), radius * 3.0 + 2.0, radius, &[material], seed)
+    body(
+        name,
+        kind,
+        orbital_position(orbit, angle),
+        radius * 3.0 + 2.0,
+        radius,
+        &[material],
+        seed,
+    )
 }
 
 fn body(
@@ -92,12 +156,19 @@ fn sphere_surface(radius: f32, materials: &[usize], seed: u32) -> Vec<Voxel> {
                 if center.dot(center) > radius_squared {
                     continue;
                 }
-                let exposed = [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]
-                    .into_iter()
-                    .any(|(dx, dy, dz)| {
-                        let neighbor = center + Vec3::new(dx as f32, dy as f32, dz as f32);
-                        neighbor.dot(neighbor) > radius_squared
-                    });
+                let exposed = [
+                    (1, 0, 0),
+                    (-1, 0, 0),
+                    (0, 1, 0),
+                    (0, -1, 0),
+                    (0, 0, 1),
+                    (0, 0, -1),
+                ]
+                .into_iter()
+                .any(|(dx, dy, dz)| {
+                    let neighbor = center + Vec3::new(dx as f32, dy as f32, dz as f32);
+                    neighbor.dot(neighbor) > radius_squared
+                });
                 if exposed {
                     let variation = hash(x, y, z, seed) as usize % materials.len();
                     voxels.push(Voxel {

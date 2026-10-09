@@ -37,9 +37,10 @@ pub(crate) fn render(scene: &Scene, camera: Camera, width: usize, height: usize)
 }
 
 fn trace(scene: &Scene, ray: Ray, depth: u8) -> Rgb {
-    scene
-        .intersect(ray, f32::INFINITY)
-        .map_or_else(|| sky::sample(ray.direction), |hit| shade(scene, ray, hit, depth))
+    scene.intersect(ray, f32::INFINITY).map_or_else(
+        || sky::sample(ray.direction),
+        |hit| shade(scene, ray, hit, depth),
+    )
 }
 
 fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
@@ -83,11 +84,8 @@ fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
 
     if material.transparency > 0.0
         && depth < MAX_SECONDARY_BOUNCES
-        && let Some((direction, outward_normal)) = refract(
-            ray.direction,
-            hit.normal,
-            material.refractive_index,
-        )
+        && let Some((direction, outward_normal)) =
+            refract(ray.direction, hit.normal, material.refractive_index)
     {
         let transmitted = trace(
             scene,
@@ -103,7 +101,11 @@ fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
     color
 }
 
-fn refract(direction: crate::math::Vec3, normal: crate::math::Vec3, index: f32) -> Option<(crate::math::Vec3, crate::math::Vec3)> {
+fn refract(
+    direction: crate::math::Vec3,
+    normal: crate::math::Vec3,
+    index: f32,
+) -> Option<(crate::math::Vec3, crate::math::Vec3)> {
     let entering = direction.dot(normal) < 0.0;
     let outward_normal = if entering { normal } else { -normal };
     let ratio = if entering { index.recip() } else { index };
@@ -111,7 +113,8 @@ fn refract(direction: crate::math::Vec3, normal: crate::math::Vec3, index: f32) 
     let discriminant = 1.0 - ratio * ratio * (1.0 - cosine * cosine);
     (discriminant >= 0.0).then(|| {
         (
-            (direction * ratio + outward_normal * (ratio * cosine - discriminant.sqrt())).normalized(),
+            (direction * ratio + outward_normal * (ratio * cosine - discriminant.sqrt()))
+                .normalized(),
             outward_normal,
         )
     })
