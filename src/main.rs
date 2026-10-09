@@ -29,6 +29,7 @@ fn main() {
         .build();
 
     window.set_target_fps(60);
+    window.set_exit_key(None);
 
     let image = Image::gen_image_color(WIDTH, HEIGHT, Color::BLACK);
     let mut framebuffer = match window.load_texture_from_image(&thread, &image) {
