@@ -212,9 +212,9 @@ fn asteroid_belt() -> CelestialBody {
         state = xorshift(state);
         let angle = state as f32 / u32::MAX as f32 * std::f32::consts::TAU;
         state = xorshift(state);
-        let radius = 24.5 + state as f32 / u32::MAX as f32 * 4.5;
+        let radius = 23.0 + state as f32 / u32::MAX as f32 * 8.0;
         state = xorshift(state);
-        let y = (state % 7) as i32 - 3;
+        let y = (state % 11) as i32 - 5;
         positions.insert(GridPosition::new(
             (angle.cos() * radius).round() as i32,
             y,
