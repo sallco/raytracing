@@ -45,7 +45,7 @@ fn trace(scene: &Scene, ray: Ray, depth: u8) -> Rgb {
 
 fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
     let material = &scene.materials[hit.material];
-    let mut color = material.emission + material.albedo * 0.075;
+    let mut color = material.emission + material.albedo * 0.11;
     let light_vector = scene.light.position - hit.point;
     let light_distance = light_vector.length();
     let light_direction = light_vector / light_distance;
