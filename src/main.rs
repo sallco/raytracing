@@ -7,6 +7,7 @@ mod generation;
 mod geometry;
 mod material;
 mod math;
+mod renderer;
 mod scene;
 mod sky;
 mod world;

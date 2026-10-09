@@ -50,7 +50,7 @@ impl Scene {
             light: Light {
                 position: Vec3::ZERO,
                 color: Rgb::new(1.0, 0.72, 0.4),
-                intensity: 95.0,
+                intensity: 1_600.0,
             },
         }
     }
