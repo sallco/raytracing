@@ -4,6 +4,7 @@ use raylib::prelude::*;
 
 mod camera;
 mod geometry;
+mod material;
 mod math;
 
 const WIDTH: i32 = 960;
