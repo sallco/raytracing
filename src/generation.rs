@@ -45,6 +45,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
         asteroid_belt(),
     ];
     bodies.push(lunar_terrain(bodies[3].center + Vec3::new(5.0, -1.4, 1.0)));
+    bodies.push(space_station());
     bodies
 }
 
@@ -184,6 +185,40 @@ fn lunar_terrain(center: Vec3) -> CelestialBody {
         center,
         22.0,
         material_id::REGOLITH,
+        voxels,
+    )
+}
+
+fn space_station() -> CelestialBody {
+    let mut voxels = Vec::new();
+    for z in -5..=5 {
+        for x in -8..=8 {
+            if x.abs() >= 6 || z.abs() >= 3 || (x + z) % 3 == 0 {
+                voxels.push(Voxel {
+                    position: GridPosition::new(x, 0, z),
+                    material: material_id::METAL,
+                });
+            }
+        }
+    }
+    for y in 1..=4 {
+        for &(x, z) in &[(-5, -2), (-5, 2), (5, -2), (5, 2)] {
+            voxels.push(Voxel {
+                position: GridPosition::new(x, y, z),
+                material: if y == 2 || y == 3 {
+                    material_id::GLASS
+                } else {
+                    material_id::METAL
+                },
+            });
+        }
+    }
+    CelestialBody::new(
+        "Estación Helios",
+        "Base espacial",
+        Vec3::new(7.0, -3.5, -34.0),
+        24.0,
+        material_id::METAL,
         voxels,
     )
 }
