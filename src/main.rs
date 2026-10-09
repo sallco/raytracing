@@ -6,6 +6,7 @@ use std::time::Instant;
 mod camera;
 mod generation;
 mod geometry;
+mod hud;
 mod material;
 mod math;
 mod renderer;
@@ -88,5 +89,6 @@ fn main() {
             16,
             Color::RAYWHITE,
         );
+        hud::draw(&mut drawing, &scene, selection);
     }
 }
