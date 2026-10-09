@@ -68,9 +68,15 @@ impl Camera {
         self.distance = (self.distance * (1.0 - wheel * 0.1)).clamp(8.0, 150.0);
     }
 
-    pub(crate) fn focus(&mut self, target: Vec3, distance: f32) {
+    pub(crate) fn focus(&mut self, target: Vec3, distance: f32) -> bool {
+        if (self.target - target).length() < 0.01 && (self.distance - distance).abs() < 0.01 {
+            self.target = target;
+            self.distance = distance;
+            return false;
+        }
         self.target = self.target.lerp(target, 0.09);
         self.distance += (distance - self.distance) * 0.09;
+        true
     }
 
     pub(crate) fn reset(&mut self) {

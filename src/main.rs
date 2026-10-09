@@ -41,39 +41,50 @@ fn main() {
     let scene = scene::Scene::solar_system();
     let mut camera = camera::Camera::overview();
     let mut selection = None;
+    let mut dirty = true;
+    let mut render_time_ms = 0.0;
 
     while !window.window_should_close() {
         if window.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
             let delta = window.get_mouse_delta();
-            camera.orbit(delta.x, delta.y);
+            if delta.x.abs() > f32::EPSILON || delta.y.abs() > f32::EPSILON {
+                camera.orbit(delta.x, delta.y);
+                dirty = true;
+            }
         }
         let wheel = window.get_mouse_wheel_move();
         if wheel.abs() > f32::EPSILON {
             camera.zoom(wheel);
+            dirty = true;
         }
         if window.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
             selection = None;
             camera.reset();
+            dirty = true;
         }
         if window.is_key_pressed(KeyboardKey::KEY_RIGHT) {
             selection = Some(selection.map_or(0, |index| (index + 1) % scene.bodies.len()));
+            dirty = true;
         }
         if window.is_key_pressed(KeyboardKey::KEY_LEFT) {
             selection = Some(selection.map_or(scene.bodies.len() - 1, |index| {
                 (index + scene.bodies.len() - 1) % scene.bodies.len()
             }));
+            dirty = true;
         }
         if let Some(index) = selection {
             let body = &scene.bodies[index];
-            camera.focus(body.center, body.focus_distance);
+            dirty |= camera.focus(body.center, body.focus_distance);
         }
-
-        let started = Instant::now();
-        let pixels = renderer::render(&scene, camera, WIDTH as usize, HEIGHT as usize);
-        let render_time_ms = started.elapsed().as_secs_f32() * 1_000.0;
-        if let Err(error) = framebuffer.update_texture(&pixels) {
-            eprintln!("No fue posible actualizar el framebuffer: {error}");
-            break;
+        if dirty {
+            let started = Instant::now();
+            let pixels = renderer::render(&scene, camera, WIDTH as usize, HEIGHT as usize);
+            render_time_ms = started.elapsed().as_secs_f32() * 1_000.0;
+            if let Err(error) = framebuffer.update_texture(&pixels) {
+                eprintln!("No fue posible actualizar el framebuffer: {error}");
+                break;
+            }
+            dirty = false;
         }
 
         let mut drawing = window.begin_drawing(&thread);
