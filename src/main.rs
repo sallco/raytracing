@@ -3,6 +3,7 @@
 use raylib::prelude::*;
 
 mod camera;
+mod generation;
 mod geometry;
 mod material;
 mod math;
