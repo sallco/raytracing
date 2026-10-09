@@ -191,8 +191,8 @@ fn lunar_terrain(center: Vec3) -> CelestialBody {
 
 fn space_station() -> CelestialBody {
     let mut voxels = Vec::new();
-    for z in -5..=5 {
-        for x in -8..=8 {
+    for z in -5_i32..=5 {
+        for x in -8_i32..=8 {
             if x.abs() >= 6 || z.abs() >= 3 || (x + z) % 3 == 0 {
                 voxels.push(Voxel {
                     position: GridPosition::new(x, 0, z),
