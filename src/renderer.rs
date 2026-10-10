@@ -86,7 +86,7 @@ fn visible_orbits(scene: &Scene, ray: Ray) -> Rgb {
 
 fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
     let material = &scene.materials[hit.material];
-    let surface = material.sample_surface(hit.uv, hit.texture_uv, hit.texture_variant);
+    let surface = material.sample_surface(hit.texture_uv, hit.texture_variant);
     let albedo = surface.albedo;
     let shading_normal = (hit.tangent * surface.tangent_normal.x
         + hit.bitangent * surface.tangent_normal.y

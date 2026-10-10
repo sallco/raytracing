@@ -72,7 +72,6 @@ pub(crate) struct Hit {
     pub(crate) point: Vec3,
     pub(crate) normal: Vec3,
     pub(crate) material: usize,
-    pub(crate) uv: [f32; 2],
     pub(crate) texture_uv: [f32; 2],
     pub(crate) texture_variant: u32,
     pub(crate) tangent: Vec3,

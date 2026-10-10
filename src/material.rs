@@ -120,12 +120,7 @@ impl Material {
         self
     }
 
-    pub(crate) fn sample_surface(
-        &self,
-        spherical_uv: [f32; 2],
-        texture_uv: [f32; 2],
-        variant: u32,
-    ) -> SurfaceSample {
+    pub(crate) fn sample_surface(&self, texture_uv: [f32; 2], variant: u32) -> SurfaceSample {
         self.texture.as_ref().map_or(
             SurfaceSample {
                 albedo: self.albedo,
@@ -134,7 +129,7 @@ impl Material {
                 metallic: self.metallic,
             },
             |texture| {
-                let sample = texture.sample(spherical_uv, texture_uv, variant);
+                let sample = texture.sample(texture_uv, variant);
                 SurfaceSample {
                     albedo: sample.albedo,
                     tangent_normal: sample.tangent_normal,

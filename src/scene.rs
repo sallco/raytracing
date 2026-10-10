@@ -222,7 +222,6 @@ impl Scene {
                             point: ray.at(distance),
                             normal: local_normal.rotate_y(body.rotation),
                             material: voxel.material,
-                            uv: spherical_uv(voxel.position.as_vec3() + Vec3::new(0.5, 0.5, 0.5)),
                             texture_uv: mapping.uv,
                             texture_variant: voxel_texture_variant(voxel.position, voxel.material),
                             tangent: mapping.tangent.rotate_y(body.rotation),
@@ -254,14 +253,6 @@ impl Scene {
             emission.r <= f32::EPSILON && emission.g <= f32::EPSILON && emission.b <= f32::EPSILON
         })
     }
-}
-
-fn spherical_uv(point: Vec3) -> [f32; 2] {
-    let direction = point.normalized();
-    [
-        0.5 + direction.z.atan2(direction.x) / std::f32::consts::TAU,
-        0.5 - direction.y.asin() / std::f32::consts::PI,
-    ]
 }
 
 struct CubeMapping {
