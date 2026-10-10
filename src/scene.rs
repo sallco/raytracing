@@ -33,40 +33,76 @@ impl Scene {
             Material::matte("Regolito mercuriano", Rgb::new(0.38, 0.34, 0.31), 0.95).textured(
                 Texture::planet(
                     PlanetTexture::Mercury,
-                    &[SurfaceTexture::Rocks014, SurfaceTexture::Rocks025],
+                    &[
+                        SurfaceTexture::Rocks011,
+                        SurfaceTexture::Rocks014,
+                        SurfaceTexture::Rocks024S,
+                        SurfaceTexture::Rocks025,
+                    ],
                 ),
             ),
             Material::matte("Nubes de Venus", Rgb::new(0.86, 0.58, 0.23), 0.82).textured(
                 Texture::planet(
                     PlanetTexture::Venus,
-                    &[SurfaceTexture::Ground104, SurfaceTexture::Ground111],
+                    &[
+                        SurfaceTexture::Ground104,
+                        SurfaceTexture::Metal041C,
+                        SurfaceTexture::Metal056C,
+                    ],
                 ),
             ),
             Material::matte("Océano terrestre", Rgb::new(0.03, 0.18, 0.62), 0.34).textured(
-                Texture::planet(PlanetTexture::EarthOcean, &[SurfaceTexture::Metal040]),
+                Texture::planet(
+                    PlanetTexture::EarthOcean,
+                    &[
+                        SurfaceTexture::Metal040,
+                        SurfaceTexture::Metal046B,
+                        SurfaceTexture::Metal061B,
+                    ],
+                ),
             ),
             Material::matte("Continente terrestre", Rgb::new(0.12, 0.48, 0.16), 0.78).textured(
                 Texture::planet(
                     PlanetTexture::EarthLand,
-                    &[SurfaceTexture::Ground111, SurfaceTexture::Ground104],
+                    &[
+                        SurfaceTexture::Ground111,
+                        SurfaceTexture::Rocks012,
+                        SurfaceTexture::Rocks025,
+                    ],
                 ),
             ),
             Material::matte("Suelo marciano", Rgb::new(0.62, 0.16, 0.06), 0.92).textured(
                 Texture::planet(
                     PlanetTexture::Mars,
-                    &[SurfaceTexture::Ground111, SurfaceTexture::Rocks014],
+                    &[
+                        SurfaceTexture::Ground111,
+                        SurfaceTexture::Metal041B,
+                        SurfaceTexture::Metal041C,
+                        SurfaceTexture::Metal053C,
+                        SurfaceTexture::Metal056C,
+                        SurfaceTexture::Rock029,
+                    ],
                 ),
             ),
             Material::matte("Atmósfera de Júpiter", Rgb::new(0.75, 0.47, 0.28), 0.72).textured(
                 Texture::planet(
                     PlanetTexture::Jupiter,
-                    &[SurfaceTexture::Ground104, SurfaceTexture::Ground111],
+                    &[
+                        SurfaceTexture::Ground104,
+                        SurfaceTexture::Ground111,
+                        SurfaceTexture::Rocks012,
+                        SurfaceTexture::Rocks025,
+                    ],
                 ),
             ),
             Material::matte("Atmósfera de Saturno", Rgb::new(0.82, 0.68, 0.39), 0.76).textured(
                 Texture::planet(
                     PlanetTexture::Saturn,
-                    &[SurfaceTexture::Ground104, SurfaceTexture::Rocks025],
+                    &[
+                        SurfaceTexture::Ground104,
+                        SurfaceTexture::Rocks014,
+                        SurfaceTexture::Rocks025,
+                    ],
                 ),
             ),
             Material::matte("Hielo de los anillos", Rgb::new(0.72, 0.68, 0.57), 0.44)
@@ -74,18 +110,34 @@ impl Scene {
                 .transparent(0.08, 1.31)
                 .textured(Texture::planet(
                     PlanetTexture::SaturnRing,
-                    &[SurfaceTexture::Rocks025, SurfaceTexture::Rocks014],
+                    &[
+                        SurfaceTexture::Rocks011,
+                        SurfaceTexture::Rocks012,
+                        SurfaceTexture::Rocks014,
+                        SurfaceTexture::Rocks024S,
+                        SurfaceTexture::Rocks025,
+                    ],
                 )),
             Material::matte("Hielo de Urano", Rgb::new(0.2, 0.72, 0.76), 0.4).textured(
                 Texture::planet(
                     PlanetTexture::Uranus,
-                    &[SurfaceTexture::Rocks014, SurfaceTexture::Metal040],
+                    &[
+                        SurfaceTexture::Metal040,
+                        SurfaceTexture::Metal046B,
+                        SurfaceTexture::Metal061B,
+                        SurfaceTexture::Rocks014,
+                    ],
                 ),
             ),
             Material::matte("Hielo de Neptuno", Rgb::new(0.08, 0.24, 0.83), 0.36).textured(
                 Texture::planet(
                     PlanetTexture::Neptune,
-                    &[SurfaceTexture::Metal040, SurfaceTexture::Rocks014],
+                    &[
+                        SurfaceTexture::Metal040,
+                        SurfaceTexture::Metal046B,
+                        SurfaceTexture::Metal061B,
+                        SurfaceTexture::Rocks014,
+                    ],
                 ),
             ),
         ];

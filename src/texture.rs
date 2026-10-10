@@ -27,7 +27,17 @@ pub(crate) enum SurfaceTexture {
     Ground111,
     Metal034,
     Metal040,
+    Metal041B,
+    Metal041C,
+    Metal046B,
+    Metal053C,
+    Metal056C,
+    Metal061B,
+    Rock029,
+    Rocks011,
+    Rocks012,
     Rocks014,
+    Rocks024S,
     Rocks025,
 }
 
@@ -141,58 +151,63 @@ impl SurfaceTexture {
         static GROUND111: OnceLock<SurfaceMap> = OnceLock::new();
         static METAL034: OnceLock<SurfaceMap> = OnceLock::new();
         static METAL040: OnceLock<SurfaceMap> = OnceLock::new();
+        static METAL041B: OnceLock<SurfaceMap> = OnceLock::new();
+        static METAL041C: OnceLock<SurfaceMap> = OnceLock::new();
+        static METAL046B: OnceLock<SurfaceMap> = OnceLock::new();
+        static METAL053C: OnceLock<SurfaceMap> = OnceLock::new();
+        static METAL056C: OnceLock<SurfaceMap> = OnceLock::new();
+        static METAL061B: OnceLock<SurfaceMap> = OnceLock::new();
+        static ROCK029: OnceLock<SurfaceMap> = OnceLock::new();
+        static ROCKS011: OnceLock<SurfaceMap> = OnceLock::new();
+        static ROCKS012: OnceLock<SurfaceMap> = OnceLock::new();
         static ROCKS014: OnceLock<SurfaceMap> = OnceLock::new();
+        static ROCKS024S: OnceLock<SurfaceMap> = OnceLock::new();
         static ROCKS025: OnceLock<SurfaceMap> = OnceLock::new();
 
+        macro_rules! load_surface {
+            ($storage:ident, $name:literal) => {
+                $storage.get_or_init(|| {
+                    SurfaceMap::load(
+                        include_bytes!(concat!("../assets/textures/", $name, "_Color.png")),
+                        include_bytes!(concat!("../assets/textures/", $name, "_NormalGL.png")),
+                        include_bytes!(concat!("../assets/textures/", $name, "_Roughness.png")),
+                        None,
+                    )
+                })
+            };
+            ($storage:ident, $name:literal, metal) => {
+                $storage.get_or_init(|| {
+                    SurfaceMap::load(
+                        include_bytes!(concat!("../assets/textures/", $name, "_Color.png")),
+                        include_bytes!(concat!("../assets/textures/", $name, "_NormalGL.png")),
+                        include_bytes!(concat!("../assets/textures/", $name, "_Roughness.png")),
+                        Some(include_bytes!(concat!(
+                            "../assets/textures/",
+                            $name,
+                            "_Metalness.png"
+                        ))),
+                    )
+                })
+            };
+        }
+
         match self {
-            Self::Ground104 => GROUND104.get_or_init(|| {
-                SurfaceMap::load(
-                    include_bytes!("../assets/textures/ground104/albedo.png"),
-                    include_bytes!("../assets/textures/ground104/normal_gl.png"),
-                    include_bytes!("../assets/textures/ground104/roughness.png"),
-                    None,
-                )
-            }),
-            Self::Ground111 => GROUND111.get_or_init(|| {
-                SurfaceMap::load(
-                    include_bytes!("../assets/textures/ground111/albedo.png"),
-                    include_bytes!("../assets/textures/ground111/normal_gl.png"),
-                    include_bytes!("../assets/textures/ground111/roughness.png"),
-                    None,
-                )
-            }),
-            Self::Metal034 => METAL034.get_or_init(|| {
-                SurfaceMap::load(
-                    include_bytes!("../assets/textures/metal034/albedo.png"),
-                    include_bytes!("../assets/textures/metal034/normal_gl.png"),
-                    include_bytes!("../assets/textures/metal034/roughness.png"),
-                    Some(include_bytes!("../assets/textures/metal034/metalness.png")),
-                )
-            }),
-            Self::Metal040 => METAL040.get_or_init(|| {
-                SurfaceMap::load(
-                    include_bytes!("../assets/textures/metal040/albedo.png"),
-                    include_bytes!("../assets/textures/metal040/normal_gl.png"),
-                    include_bytes!("../assets/textures/metal040/roughness.png"),
-                    Some(include_bytes!("../assets/textures/metal040/metalness.png")),
-                )
-            }),
-            Self::Rocks014 => ROCKS014.get_or_init(|| {
-                SurfaceMap::load(
-                    include_bytes!("../assets/textures/rocks014/albedo.png"),
-                    include_bytes!("../assets/textures/rocks014/normal_gl.png"),
-                    include_bytes!("../assets/textures/rocks014/roughness.png"),
-                    None,
-                )
-            }),
-            Self::Rocks025 => ROCKS025.get_or_init(|| {
-                SurfaceMap::load(
-                    include_bytes!("../assets/textures/rocks025/albedo.png"),
-                    include_bytes!("../assets/textures/rocks025/normal_gl.png"),
-                    include_bytes!("../assets/textures/rocks025/roughness.png"),
-                    None,
-                )
-            }),
+            Self::Ground104 => load_surface!(GROUND104, "Ground104"),
+            Self::Ground111 => load_surface!(GROUND111, "Ground111"),
+            Self::Metal034 => load_surface!(METAL034, "Metal034", metal),
+            Self::Metal040 => load_surface!(METAL040, "Metal040", metal),
+            Self::Metal041B => load_surface!(METAL041B, "Metal041B", metal),
+            Self::Metal041C => load_surface!(METAL041C, "Metal041C", metal),
+            Self::Metal046B => load_surface!(METAL046B, "Metal046B", metal),
+            Self::Metal053C => load_surface!(METAL053C, "Metal053C", metal),
+            Self::Metal056C => load_surface!(METAL056C, "Metal056C", metal),
+            Self::Metal061B => load_surface!(METAL061B, "Metal061B", metal),
+            Self::Rock029 => load_surface!(ROCK029, "Rock029"),
+            Self::Rocks011 => load_surface!(ROCKS011, "Rocks011"),
+            Self::Rocks012 => load_surface!(ROCKS012, "Rocks012"),
+            Self::Rocks014 => load_surface!(ROCKS014, "Rocks014"),
+            Self::Rocks024S => load_surface!(ROCKS024S, "Rocks024S"),
+            Self::Rocks025 => load_surface!(ROCKS025, "Rocks025"),
         }
     }
 }
