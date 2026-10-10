@@ -39,15 +39,23 @@ fn main() {
             return;
         }
     };
-    let scene = scene::Scene::solar_system();
+    let mut scene = scene::Scene::solar_system();
     let mut camera = camera::Camera::overview();
     let mut selection = None;
     let mut applying_default_zoom = false;
     let mut returning_to_overview = false;
     let mut dirty = true;
+    let mut animation_accumulator = 0.0_f32;
     let mut render_time_ms = 0.0;
 
     while !window.window_should_close() {
+        animation_accumulator += window.get_frame_time().min(0.05);
+        if animation_accumulator >= 1.0 / 30.0 {
+            scene.update(animation_accumulator);
+            animation_accumulator = 0.0;
+            dirty = true;
+        }
+
         if window.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
             let delta = window.get_mouse_delta();
             if delta.x.abs() > f32::EPSILON || delta.y.abs() > f32::EPSILON {

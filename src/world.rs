@@ -4,6 +4,31 @@ use crate::{geometry::Aabb, math::Vec3};
 
 pub(crate) const CHUNK_SIZE: i32 = 8;
 
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct Orbit {
+    pub(crate) radius: f32,
+    pub(crate) angle: f32,
+    pub(crate) angular_speed: f32,
+}
+
+impl Orbit {
+    pub(crate) const fn new(radius: f32, angle: f32, angular_speed: f32) -> Self {
+        Self {
+            radius,
+            angle,
+            angular_speed,
+        }
+    }
+
+    fn position(self) -> Vec3 {
+        Vec3::new(
+            self.angle.cos() * self.radius,
+            0.0,
+            self.angle.sin() * self.radius,
+        )
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub(crate) struct GridPosition {
     pub(crate) x: i32,
@@ -70,7 +95,9 @@ pub(crate) struct CelestialBody {
     pub(crate) name: &'static str,
     pub(crate) kind: &'static str,
     pub(crate) center: Vec3,
+    pub(crate) orbit: Option<Orbit>,
     pub(crate) rotation: f32,
+    rotation_speed: f32,
     pub(crate) focus_distance: f32,
     pub(crate) voxel_scale: f32,
     pub(crate) predominant_material: usize,
@@ -129,7 +156,9 @@ impl CelestialBody {
             name,
             kind,
             center,
+            orbit: None,
             rotation: 0.0,
+            rotation_speed: 0.0,
             focus_distance,
             voxel_scale,
             predominant_material,
@@ -141,5 +170,24 @@ impl CelestialBody {
 
     pub(crate) fn voxel_count(&self) -> usize {
         self.voxels.len()
+    }
+
+    pub(crate) fn animated(mut self, orbit: Option<Orbit>, rotation_speed: f32) -> Self {
+        self.orbit = orbit;
+        self.rotation_speed = rotation_speed;
+        if let Some(orbit) = self.orbit {
+            self.center = orbit.position();
+        }
+        self
+    }
+
+    pub(crate) fn advance(&mut self, delta_seconds: f32) {
+        if let Some(orbit) = &mut self.orbit {
+            orbit.angle = (orbit.angle + orbit.angular_speed * delta_seconds)
+                .rem_euclid(std::f32::consts::TAU);
+            self.center = orbit.position();
+        }
+        self.rotation =
+            (self.rotation + self.rotation_speed * delta_seconds).rem_euclid(std::f32::consts::TAU);
     }
 }

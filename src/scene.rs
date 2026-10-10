@@ -55,6 +55,12 @@ impl Scene {
         self.bodies.iter().map(CelestialBody::voxel_count).sum()
     }
 
+    pub(crate) fn update(&mut self, delta_seconds: f32) {
+        for body in &mut self.bodies {
+            body.advance(delta_seconds);
+        }
+    }
+
     pub(crate) fn intersect(&self, ray: Ray, maximum: f32) -> Option<Hit> {
         let mut closest = maximum;
         let mut result = None;
