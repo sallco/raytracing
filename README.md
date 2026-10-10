@@ -62,7 +62,8 @@ respuesta del HUD y los controles.
 - Los cuerpos permanecen en coordenadas locales; cada rayo se transforma para
   rotarlos sin mover miles de voxeles.
 - Las texturas CC0 se embeben, decodifican una vez en CPU y se muestrean con UV
-  locales por cara; albedo, normal GL y roughness modifican la iluminación.
+  locales por cara; albedo, normal GL y roughness modifican la iluminación. No
+  se generan albedos planetarios procedurales.
 
 La procedencia, licencia y asignación de los recursos se documentan en
 [`assets/README.md`](assets/README.md).

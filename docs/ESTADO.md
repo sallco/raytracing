@@ -25,7 +25,8 @@ Está implementado:
 - Animación actualizada a 30 pasos por segundo con reutilización del framebuffer.
 - Modo reproducible de medición con `--benchmark`.
 - Texturas CC0 de ambientCG optimizadas y documentadas, con albedo, normal GL,
-  roughness y metalness cuando está disponible.
+  roughness y metalness cuando está disponible; las 16 familias proporcionadas
+  están versionadas como PNG y asignadas a la escena.
 - Mapeo independiente por cubo y por cara, con recorte, orientación, tinte y
   variación deterministas entre varios materiales dentro de cada planeta; no
   existe una envoltura de textura continua sobre el cuerpo completo.

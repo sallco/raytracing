@@ -11,22 +11,30 @@ dentro del proyecto y para uso comercial, sin exigir atribución.
 
 | Recurso | Mapas versionados | Uso actual | Fuente |
 | --- | --- | --- | --- |
-| Ground104 | Albedo, NormalGL, Roughness | Venus, Tierra, Júpiter y Saturno | [ambientCG Ground104](https://ambientcg.com/a/Ground104) |
-| Ground111 | Albedo, NormalGL, Roughness | Venus, Tierra, Marte y Júpiter | [ambientCG Ground111](https://ambientcg.com/a/Ground111) |
+| Ground104 | Albedo, NormalGL, Roughness | Venus, Júpiter y Saturno | [ambientCG Ground104](https://ambientcg.com/a/Ground104) |
+| Ground111 | Albedo, NormalGL, Roughness | Tierra, Marte y Júpiter | [ambientCG Ground111](https://ambientcg.com/a/Ground111) |
 | Metal034 | Albedo, NormalGL, Roughness, Metalness | Sol | [ambientCG Metal034](https://ambientcg.com/a/Metal034) |
 | Metal040 | Albedo, NormalGL, Roughness, Metalness | Tierra, Urano y Neptuno | [ambientCG Metal040](https://ambientcg.com/a/Metal040) |
-| Rocks014 | Albedo, NormalGL, Roughness | Mercurio, Marte, anillos, Urano y Neptuno | [ambientCG Rocks014](https://ambientcg.com/a/Rocks014) |
-| Rocks025 | Albedo, NormalGL, Roughness | Mercurio, Saturno y anillos | [ambientCG Rocks025](https://ambientcg.com/a/Rocks025) |
+| Metal041B | Albedo, NormalGL, Roughness, Metalness | Marte | [ambientCG Metal041B](https://ambientcg.com/a/Metal041B) |
+| Metal041C | Albedo, NormalGL, Roughness, Metalness | Venus y Marte | [ambientCG Metal041C](https://ambientcg.com/a/Metal041C) |
+| Metal046B | Albedo, NormalGL, Roughness, Metalness | Tierra, Urano y Neptuno | [ambientCG Metal046B](https://ambientcg.com/a/Metal046B) |
+| Metal053C | Albedo, NormalGL, Roughness, Metalness | Marte | [ambientCG Metal053C](https://ambientcg.com/a/Metal053C) |
+| Metal056C | Albedo, NormalGL, Roughness, Metalness | Venus y Marte | [ambientCG Metal056C](https://ambientcg.com/a/Metal056C) |
+| Metal061B | Albedo, NormalGL, Roughness, Metalness | Tierra, Urano y Neptuno | [ambientCG Metal061B](https://ambientcg.com/a/Metal061B) |
+| Rock029 | Albedo, NormalGL, Roughness | Marte | [ambientCG Rock029](https://ambientcg.com/a/Rock029) |
+| Rocks011 | Albedo, NormalGL, Roughness | Mercurio y anillos | [ambientCG Rocks011](https://ambientcg.com/a/Rocks011) |
+| Rocks012 | Albedo, NormalGL, Roughness | Tierra, Júpiter y anillos | [ambientCG Rocks012](https://ambientcg.com/a/Rocks012) |
+| Rocks014 | Albedo, NormalGL, Roughness | Mercurio, Saturno, anillos, Urano y Neptuno | [ambientCG Rocks014](https://ambientcg.com/a/Rocks014) |
+| Rocks024S | Albedo, NormalGL, Roughness | Mercurio y anillos | [ambientCG Rocks024S](https://ambientcg.com/a/Rocks024S) |
+| Rocks025 | Albedo, NormalGL, Roughness | Mercurio, Tierra, Júpiter, Saturno y anillos | [ambientCG Rocks025](https://ambientcg.com/a/Rocks025) |
 
 Cada cara visible usa coordenadas UV locales al cubo: no se proyecta una sola
 imagen sobre el planeta completo. La posición del voxel determina de forma
 estable qué recurso recibe, su orientación, escala, recorte y variación de
-luminosidad. El patrón planetario se evalúa en el centro del voxel para obtener
-un único tinte por cubo; el albedo de ambientCG es la superficie principal y no
-una modulación secundaria. En los cuerpos rocosos y gigantes cálidos conserva
-entre 85% y 92% de su color original; Tierra y los gigantes azules reciben más
-tinte para mantener su identidad. Los mapas PBR aportan el detalle dentro de
-cada cara.
+luminosidad. No se genera ningún albedo procedural: la superficie procede
+exclusivamente de estos PNG. Un color fijo del material puede teñir el albedo
+para conservar la identidad de cada planeta, sin añadir otra imagen o patrón.
+Los mapas PBR aportan el detalle dentro de cada cara.
 Una separación tonal estrecha en los bordes evita que dos caras coplanares se
 lean como una superficie continua.
 
