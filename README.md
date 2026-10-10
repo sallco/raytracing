@@ -9,6 +9,8 @@ La escena se concentra exclusivamente en el Sol y los ocho planetas, incluidos
 los anillos de Saturno. Incluye trayectorias orbitales visibles, traslación y
 rotación planetaria, cielo estelar procedural, halo solar, luz directa, ambiente
 tenue, sombras, reflexión y refracción con un máximo de dos rebotes secundarios.
+Cada cubo tiene una textura PBR propia, elegida y orientada de forma
+determinista entre los materiales asignados a su planeta.
 
 ## Entorno
 
@@ -59,6 +61,11 @@ respuesta del HUD y los controles.
 - El framebuffer se divide en hasta 12 franjas usando `std::thread::scope`.
 - Los cuerpos permanecen en coordenadas locales; cada rayo se transforma para
   rotarlos sin mover miles de voxeles.
+- Las texturas CC0 se embeben, decodifican una vez en CPU y se muestrean con UV
+  locales por cara; albedo, normal GL y roughness modifican la iluminación.
+
+La procedencia, licencia y asignación de los recursos se documentan en
+[`assets/README.md`](assets/README.md).
 
 El perfil de desarrollo usa optimización moderada para conservar una iteración
 fluida. El perfil de lanzamiento habilita optimización máxima y LTO fino para

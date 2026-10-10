@@ -24,17 +24,20 @@ Está implementado:
   proporciones visuales inspiradas en la jerarquía real de periodos planetarios.
 - Animación actualizada a 30 pasos por segundo con reutilización del framebuffer.
 - Modo reproducible de medición con `--benchmark`.
+- Texturas CC0 de ambientCG optimizadas y documentadas, con albedo, normal GL,
+  roughness y metalness cuando está disponible.
+- Mapeo independiente por cubo y por cara, con variación determinista entre
+  varios materiales dentro de cada planeta.
 
 ## Próximas iteraciones
 
 Queda pendiente, en orden aproximado:
 
-1. Incorporar texturas CC0 optimizadas y documentar sus licencias.
-2. Aplicar mapas normales y mejorar los patrones visuales de cada planeta.
-3. Reintroducir un cinturón de asteroides con composición y densidad controladas.
-4. Incorporar estaciones espaciales, satélites y naves como elementos secundarios.
-5. Mejorar reflexión, refracción y materiales contextuales.
-6. Continuar optimizando el render durante movimiento de cámara y animaciones.
+1. Mejorar los patrones visuales de escala planetaria.
+2. Reintroducir un cinturón de asteroides con composición y densidad controladas.
+3. Incorporar estaciones espaciales, satélites y naves como elementos secundarios.
+4. Mejorar reflexión, refracción y materiales contextuales.
+5. Continuar optimizando el render durante movimiento de cámara y animaciones.
 
 Los elementos secundarios deben añadirse después de consolidar la lectura visual
 del sistema solar y nunca volver a dominar u ocultar los planetas.

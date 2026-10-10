@@ -1,0 +1,31 @@
+# Texturas de ejecución
+
+Los archivos de este directorio son copias PNG de `256×256` optimizadas a
+partir de los paquetes `1K-JPG` proporcionados para el proyecto. El ejecutable
+embebe únicamente albedo, normal OpenGL, roughness y metalness cuando existe.
+
+Todas las fuentes proceden de [ambientCG](https://ambientcg.com/) y están
+publicadas bajo [Creative Commons CC0 1.0 Universal](https://docs.ambientcg.com/license/).
+La licencia permite copiar, modificar y redistribuir los archivos, incluso
+dentro del proyecto y para uso comercial, sin exigir atribución.
+
+| Recurso | Mapas versionados | Uso actual | Fuente |
+| --- | --- | --- | --- |
+| Ground104 | Albedo, NormalGL, Roughness | Venus, Tierra, Júpiter y Saturno | [ambientCG Ground104](https://ambientcg.com/a/Ground104) |
+| Ground111 | Albedo, NormalGL, Roughness | Venus, Tierra, Marte y Júpiter | [ambientCG Ground111](https://ambientcg.com/a/Ground111) |
+| Metal034 | Albedo, NormalGL, Roughness, Metalness | Sol | [ambientCG Metal034](https://ambientcg.com/a/Metal034) |
+| Metal040 | Albedo, NormalGL, Roughness, Metalness | Tierra, Urano y Neptuno | [ambientCG Metal040](https://ambientcg.com/a/Metal040) |
+| Rocks014 | Albedo, NormalGL, Roughness | Mercurio, Marte, anillos, Urano y Neptuno | [ambientCG Rocks014](https://ambientcg.com/a/Rocks014) |
+| Rocks025 | Albedo, NormalGL, Roughness | Mercurio, Saturno y anillos | [ambientCG Rocks025](https://ambientcg.com/a/Rocks025) |
+
+Cada cara visible usa coordenadas UV locales al cubo: no se proyecta una sola
+imagen sobre el planeta completo. La elección entre los recursos asignados y
+la orientación en múltiplos de 90 grados se derivan de la posición del voxel,
+por lo que son estables durante la rotación. El patrón planetario aporta el
+tinte y las formas de escala grande; los mapas PBR aportan el detalle de cada
+cubo.
+
+Para reducir aliasing y presión de caché durante el raytracing, los PNG se
+decodifican una sola vez en CPU y se filtran a `64×64` para el muestreo. Las
+copias `256×256` se conservan como fuente de ejecución para futuras mejoras de
+nivel de detalle.
