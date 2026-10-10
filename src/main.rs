@@ -14,8 +14,8 @@ mod scene;
 mod sky;
 mod world;
 
-const WIDTH: i32 = 960;
-const HEIGHT: i32 = 540;
+const WIDTH: i32 = 1024;
+const HEIGHT: i32 = 576;
 
 fn main() {
     if std::env::args().any(|argument| argument == "--benchmark") {
@@ -114,7 +114,7 @@ fn main() {
             16,
             Color::RAYWHITE,
         );
-        hud::draw(&mut drawing, &scene, selection);
+        hud::draw(&mut drawing, &scene, selection, WIDTH, HEIGHT);
     }
 }
 
