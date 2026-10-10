@@ -72,4 +72,5 @@ pub(crate) struct Hit {
     pub(crate) point: Vec3,
     pub(crate) normal: Vec3,
     pub(crate) material: usize,
+    pub(crate) uv: [f32; 2],
 }

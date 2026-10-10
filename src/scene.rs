@@ -128,6 +128,7 @@ impl Scene {
                             point: ray.at(distance),
                             normal: bounds.normal_at(local_point).rotate_y(body.rotation),
                             material: voxel.material,
+                            uv: spherical_uv(local_point),
                         });
                     }
                 }
@@ -155,4 +156,12 @@ impl Scene {
             emission.r <= f32::EPSILON && emission.g <= f32::EPSILON && emission.b <= f32::EPSILON
         })
     }
+}
+
+fn spherical_uv(point: Vec3) -> [f32; 2] {
+    let direction = point.normalized();
+    [
+        0.5 + direction.z.atan2(direction.x) / std::f32::consts::TAU,
+        0.5 - direction.y.asin() / std::f32::consts::PI,
+    ]
 }

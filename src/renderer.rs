@@ -86,7 +86,8 @@ fn visible_orbits(scene: &Scene, ray: Ray) -> Rgb {
 
 fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
     let material = &scene.materials[hit.material];
-    let mut color = material.emission + material.albedo * 0.11;
+    let albedo = material.sample_albedo(hit.uv[0], hit.uv[1]);
+    let mut color = material.emission.modulate(albedo) + albedo * 0.11;
     let light_vector = scene.light.position - hit.point;
     let light_distance = light_vector.length();
     let light_direction = light_vector / light_distance;
@@ -98,13 +99,13 @@ fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
     if !scene.occluded(shadow_ray, light_distance - SURFACE_BIAS) {
         let diffuse = hit.normal.dot(light_direction).max(0.0);
         let attenuation = (scene.light.intensity / (light_distance * light_distance)).min(3.0);
-        color += material.albedo.modulate(scene.light.color) * (diffuse * attenuation);
+        color += albedo.modulate(scene.light.color) * (diffuse * attenuation);
 
         let view_direction = -ray.direction;
         let halfway = (light_direction + view_direction).normalized();
         let shininess = 2.0 + (1.0 - material.roughness).powi(2) * 126.0;
         let specular = hit.normal.dot(halfway).max(0.0).powf(shininess);
-        let specular_color = Rgb::WHITE.mix(material.albedo, material.metallic);
+        let specular_color = Rgb::WHITE.mix(albedo, material.metallic);
         color += specular_color.modulate(scene.light.color) * (specular * attenuation);
     }
 
