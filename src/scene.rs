@@ -4,7 +4,7 @@ use crate::{
     geometry::Hit,
     material::{Material, Rgb},
     math::Vec3,
-    texture::{PlanetTexture, Texture},
+    texture::{PlanetTexture, SurfaceTexture, Texture},
     world::{CHUNK_SIZE, CelestialBody, GridPosition},
 };
 
@@ -26,29 +26,68 @@ impl Scene {
         let materials = vec![
             Material::matte("Plasma solar", Rgb::new(1.0, 0.52, 0.08), 0.9)
                 .emissive(Rgb::new(5.2, 2.1, 0.25))
-                .textured(Texture::planet(PlanetTexture::Sun)),
-            Material::matte("Regolito mercuriano", Rgb::new(0.38, 0.34, 0.31), 0.95)
-                .textured(Texture::planet(PlanetTexture::Mercury)),
-            Material::matte("Nubes de Venus", Rgb::new(0.86, 0.58, 0.23), 0.82)
-                .textured(Texture::planet(PlanetTexture::Venus)),
-            Material::matte("Océano terrestre", Rgb::new(0.03, 0.18, 0.62), 0.34)
-                .textured(Texture::planet(PlanetTexture::EarthOcean)),
-            Material::matte("Continente terrestre", Rgb::new(0.12, 0.48, 0.16), 0.78)
-                .textured(Texture::planet(PlanetTexture::EarthLand)),
-            Material::matte("Suelo marciano", Rgb::new(0.62, 0.16, 0.06), 0.92)
-                .textured(Texture::planet(PlanetTexture::Mars)),
-            Material::matte("Atmósfera de Júpiter", Rgb::new(0.75, 0.47, 0.28), 0.72)
-                .textured(Texture::planet(PlanetTexture::Jupiter)),
-            Material::matte("Atmósfera de Saturno", Rgb::new(0.82, 0.68, 0.39), 0.76)
-                .textured(Texture::planet(PlanetTexture::Saturn)),
+                .textured(Texture::planet(
+                    PlanetTexture::Sun,
+                    &[SurfaceTexture::Metal034],
+                )),
+            Material::matte("Regolito mercuriano", Rgb::new(0.38, 0.34, 0.31), 0.95).textured(
+                Texture::planet(
+                    PlanetTexture::Mercury,
+                    &[SurfaceTexture::Rocks014, SurfaceTexture::Rocks025],
+                ),
+            ),
+            Material::matte("Nubes de Venus", Rgb::new(0.86, 0.58, 0.23), 0.82).textured(
+                Texture::planet(
+                    PlanetTexture::Venus,
+                    &[SurfaceTexture::Ground104, SurfaceTexture::Ground111],
+                ),
+            ),
+            Material::matte("Océano terrestre", Rgb::new(0.03, 0.18, 0.62), 0.34).textured(
+                Texture::planet(PlanetTexture::EarthOcean, &[SurfaceTexture::Metal040]),
+            ),
+            Material::matte("Continente terrestre", Rgb::new(0.12, 0.48, 0.16), 0.78).textured(
+                Texture::planet(
+                    PlanetTexture::EarthLand,
+                    &[SurfaceTexture::Ground111, SurfaceTexture::Ground104],
+                ),
+            ),
+            Material::matte("Suelo marciano", Rgb::new(0.62, 0.16, 0.06), 0.92).textured(
+                Texture::planet(
+                    PlanetTexture::Mars,
+                    &[SurfaceTexture::Ground111, SurfaceTexture::Rocks014],
+                ),
+            ),
+            Material::matte("Atmósfera de Júpiter", Rgb::new(0.75, 0.47, 0.28), 0.72).textured(
+                Texture::planet(
+                    PlanetTexture::Jupiter,
+                    &[SurfaceTexture::Ground104, SurfaceTexture::Ground111],
+                ),
+            ),
+            Material::matte("Atmósfera de Saturno", Rgb::new(0.82, 0.68, 0.39), 0.76).textured(
+                Texture::planet(
+                    PlanetTexture::Saturn,
+                    &[SurfaceTexture::Ground104, SurfaceTexture::Rocks025],
+                ),
+            ),
             Material::matte("Hielo de los anillos", Rgb::new(0.72, 0.68, 0.57), 0.44)
                 .reflective(0.1, 0.15)
                 .transparent(0.08, 1.31)
-                .textured(Texture::planet(PlanetTexture::SaturnRing)),
-            Material::matte("Hielo de Urano", Rgb::new(0.2, 0.72, 0.76), 0.4)
-                .textured(Texture::planet(PlanetTexture::Uranus)),
-            Material::matte("Hielo de Neptuno", Rgb::new(0.08, 0.24, 0.83), 0.36)
-                .textured(Texture::planet(PlanetTexture::Neptune)),
+                .textured(Texture::planet(
+                    PlanetTexture::SaturnRing,
+                    &[SurfaceTexture::Rocks025, SurfaceTexture::Rocks014],
+                )),
+            Material::matte("Hielo de Urano", Rgb::new(0.2, 0.72, 0.76), 0.4).textured(
+                Texture::planet(
+                    PlanetTexture::Uranus,
+                    &[SurfaceTexture::Rocks014, SurfaceTexture::Metal040],
+                ),
+            ),
+            Material::matte("Hielo de Neptuno", Rgb::new(0.08, 0.24, 0.83), 0.36).textured(
+                Texture::planet(
+                    PlanetTexture::Neptune,
+                    &[SurfaceTexture::Metal040, SurfaceTexture::Rocks014],
+                ),
+            ),
         ];
         debug_assert_eq!(materials.len() - 1, material_id::NEPTUNE);
 
@@ -124,11 +163,14 @@ impl Scene {
                         };
                         closest = distance;
                         let local_point = local_ray.at(distance);
+                        let local_normal = bounds.normal_at(local_point);
                         result = Some(Hit {
                             point: ray.at(distance),
-                            normal: bounds.normal_at(local_point).rotate_y(body.rotation),
+                            normal: local_normal.rotate_y(body.rotation),
                             material: voxel.material,
                             uv: spherical_uv(local_point),
+                            texture_uv: cube_uv(local_point, bounds, local_normal, voxel.position),
+                            texture_variant: voxel_texture_variant(voxel.position, voxel.material),
                         });
                     }
                 }
@@ -164,4 +206,38 @@ fn spherical_uv(point: Vec3) -> [f32; 2] {
         0.5 + direction.z.atan2(direction.x) / std::f32::consts::TAU,
         0.5 - direction.y.asin() / std::f32::consts::PI,
     ]
+}
+
+fn cube_uv(
+    point: Vec3,
+    bounds: crate::geometry::Aabb,
+    normal: Vec3,
+    voxel: GridPosition,
+) -> [f32; 2] {
+    let size = bounds.max.x - bounds.min.x;
+    let local = (point - bounds.min) / size;
+    let mut uv = if normal.x.abs() > 0.5 {
+        [local.z, 1.0 - local.y]
+    } else if normal.y.abs() > 0.5 {
+        [local.x, local.z]
+    } else {
+        [local.x, 1.0 - local.y]
+    };
+
+    match voxel_texture_variant(voxel, 0) & 3 {
+        0 => {}
+        1 => uv = [1.0 - uv[1], uv[0]],
+        2 => uv = [1.0 - uv[0], 1.0 - uv[1]],
+        _ => uv = [uv[1], 1.0 - uv[0]],
+    }
+    uv
+}
+
+fn voxel_texture_variant(position: GridPosition, material: usize) -> u32 {
+    let mut value = (position.x as u32).wrapping_mul(0x9e37_79b9)
+        ^ (position.y as u32).wrapping_mul(0x85eb_ca6b)
+        ^ (position.z as u32).wrapping_mul(0xc2b2_ae35)
+        ^ (material as u32).wrapping_mul(0x27d4_eb2d);
+    value ^= value >> 16;
+    value.wrapping_mul(0x7feb_352d) ^ (value >> 15)
 }

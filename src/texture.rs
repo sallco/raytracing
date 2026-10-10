@@ -1,3 +1,5 @@
+use std::sync::OnceLock;
+
 use crate::material::Rgb;
 
 const TEXTURE_WIDTH: usize = 256;
@@ -18,15 +20,112 @@ pub(crate) enum PlanetTexture {
     Neptune,
 }
 
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum SurfaceTexture {
+    Ground104,
+    Ground111,
+    Metal034,
+    Metal040,
+    Rocks014,
+    Rocks025,
+}
+
+#[derive(Debug)]
+struct SurfaceMap {
+    width: usize,
+    height: usize,
+    albedo: Vec<Rgb>,
+    average_luminance: f32,
+}
+
+impl SurfaceMap {
+    fn load(bytes: &[u8]) -> Self {
+        let image = image::load_from_memory_with_format(bytes, image::ImageFormat::Png)
+            .expect("las texturas PNG embebidas deben ser válidas")
+            .to_rgb8();
+        let (width, height) = image.dimensions();
+        let albedo: Vec<_> = image
+            .pixels()
+            .map(|pixel| {
+                Rgb::new(
+                    pixel[0] as f32 / 255.0,
+                    pixel[1] as f32 / 255.0,
+                    pixel[2] as f32 / 255.0,
+                )
+            })
+            .collect();
+        let average_luminance = albedo
+            .iter()
+            .map(|color| color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722)
+            .sum::<f32>()
+            / albedo.len() as f32;
+        Self {
+            width: width as usize,
+            height: height as usize,
+            albedo,
+            average_luminance,
+        }
+    }
+
+    fn sample(&self, uv: [f32; 2]) -> Rgb {
+        let x = (uv[0].rem_euclid(1.0) * self.width as f32) as usize % self.width;
+        let y = (uv[1].rem_euclid(1.0) * self.height as f32) as usize % self.height;
+        self.albedo[y * self.width + x]
+    }
+}
+
+impl SurfaceTexture {
+    fn map(self) -> &'static SurfaceMap {
+        static GROUND104: OnceLock<SurfaceMap> = OnceLock::new();
+        static GROUND111: OnceLock<SurfaceMap> = OnceLock::new();
+        static METAL034: OnceLock<SurfaceMap> = OnceLock::new();
+        static METAL040: OnceLock<SurfaceMap> = OnceLock::new();
+        static ROCKS014: OnceLock<SurfaceMap> = OnceLock::new();
+        static ROCKS025: OnceLock<SurfaceMap> = OnceLock::new();
+
+        let (storage, bytes) = match self {
+            Self::Ground104 => (
+                &GROUND104,
+                &include_bytes!("../assets/textures/ground104/albedo.png")[..],
+            ),
+            Self::Ground111 => (
+                &GROUND111,
+                &include_bytes!("../assets/textures/ground111/albedo.png")[..],
+            ),
+            Self::Metal034 => (
+                &METAL034,
+                &include_bytes!("../assets/textures/metal034/albedo.png")[..],
+            ),
+            Self::Metal040 => (
+                &METAL040,
+                &include_bytes!("../assets/textures/metal040/albedo.png")[..],
+            ),
+            Self::Rocks014 => (
+                &ROCKS014,
+                &include_bytes!("../assets/textures/rocks014/albedo.png")[..],
+            ),
+            Self::Rocks025 => (
+                &ROCKS025,
+                &include_bytes!("../assets/textures/rocks025/albedo.png")[..],
+            ),
+        };
+        storage.get_or_init(|| SurfaceMap::load(bytes))
+    }
+}
+
 #[derive(Clone, Debug)]
 pub(crate) struct Texture {
     width: usize,
     height: usize,
     pixels: Vec<Rgb>,
+    surfaces: Vec<SurfaceTexture>,
 }
 
 impl Texture {
-    pub(crate) fn planet(kind: PlanetTexture) -> Self {
+    pub(crate) fn planet(kind: PlanetTexture, surfaces: &[SurfaceTexture]) -> Self {
+        for surface in surfaces {
+            surface.map();
+        }
         let mut pixels = Vec::with_capacity(TEXTURE_WIDTH * TEXTURE_HEIGHT);
         for y in 0..TEXTURE_HEIGHT {
             let v = (y as f32 + 0.5) / TEXTURE_HEIGHT as f32;
@@ -39,13 +138,20 @@ impl Texture {
             width: TEXTURE_WIDTH,
             height: TEXTURE_HEIGHT,
             pixels,
+            surfaces: surfaces.to_vec(),
         }
     }
 
-    pub(crate) fn sample(&self, u: f32, v: f32) -> Rgb {
+    pub(crate) fn sample(&self, spherical_uv: [f32; 2], texture_uv: [f32; 2], variant: u32) -> Rgb {
+        let u = spherical_uv[0];
+        let v = spherical_uv[1];
         let x = (u.rem_euclid(1.0) * self.width as f32) as usize % self.width;
         let y = (v.clamp(0.0, 1.0 - f32::EPSILON) * self.height as f32) as usize;
-        self.pixels[y * self.width + x]
+        let identity = self.pixels[y * self.width + x];
+        let surface = self.surfaces[variant as usize % self.surfaces.len()].map();
+        let physical = surface.sample(texture_uv);
+        let normalized = physical * (0.55 / surface.average_luminance.max(0.08));
+        identity.modulate(Rgb::WHITE.mix(normalized, 0.52))
     }
 }
 

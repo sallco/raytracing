@@ -8,6 +8,7 @@ license = "UNLICENSED"
 publish = false
 
 [dependencies]
+image = { version = "0.25.8", default-features = false, features = ["png"] }
 raylib = "5.5.1"
 
 # Un poco de optimización durante la iteración para mantener interactiva la escena.

@@ -112,9 +112,14 @@ impl Material {
         self
     }
 
-    pub(crate) fn sample_albedo(&self, u: f32, v: f32) -> Rgb {
-        self.texture
-            .as_ref()
-            .map_or(self.albedo, |texture| texture.sample(u, v))
+    pub(crate) fn sample_albedo(
+        &self,
+        spherical_uv: [f32; 2],
+        texture_uv: [f32; 2],
+        variant: u32,
+    ) -> Rgb {
+        self.texture.as_ref().map_or(self.albedo, |texture| {
+            texture.sample(spherical_uv, texture_uv, variant)
+        })
     }
 }

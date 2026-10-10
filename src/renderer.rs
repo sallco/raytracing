@@ -86,7 +86,7 @@ fn visible_orbits(scene: &Scene, ray: Ray) -> Rgb {
 
 fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
     let material = &scene.materials[hit.material];
-    let albedo = material.sample_albedo(hit.uv[0], hit.uv[1]);
+    let albedo = material.sample_albedo(hit.uv, hit.texture_uv, hit.texture_variant);
     let mut color = material.emission.modulate(albedo) + albedo * 0.11;
     let light_vector = scene.light.position - hit.point;
     let light_distance = light_vector.length();
