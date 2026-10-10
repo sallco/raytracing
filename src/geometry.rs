@@ -75,4 +75,6 @@ pub(crate) struct Hit {
     pub(crate) uv: [f32; 2],
     pub(crate) texture_uv: [f32; 2],
     pub(crate) texture_variant: u32,
+    pub(crate) tangent: Vec3,
+    pub(crate) bitangent: Vec3,
 }

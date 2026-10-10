@@ -164,13 +164,17 @@ impl Scene {
                         closest = distance;
                         let local_point = local_ray.at(distance);
                         let local_normal = bounds.normal_at(local_point);
+                        let mapping =
+                            cube_mapping(local_point, bounds, local_normal, voxel.position);
                         result = Some(Hit {
                             point: ray.at(distance),
                             normal: local_normal.rotate_y(body.rotation),
                             material: voxel.material,
                             uv: spherical_uv(local_point),
-                            texture_uv: cube_uv(local_point, bounds, local_normal, voxel.position),
+                            texture_uv: mapping.uv,
                             texture_variant: voxel_texture_variant(voxel.position, voxel.material),
+                            tangent: mapping.tangent.rotate_y(body.rotation),
+                            bitangent: mapping.bitangent.rotate_y(body.rotation),
                         });
                     }
                 }
@@ -208,29 +212,81 @@ fn spherical_uv(point: Vec3) -> [f32; 2] {
     ]
 }
 
-fn cube_uv(
+struct CubeMapping {
+    uv: [f32; 2],
+    tangent: Vec3,
+    bitangent: Vec3,
+}
+
+fn cube_mapping(
     point: Vec3,
     bounds: crate::geometry::Aabb,
     normal: Vec3,
     voxel: GridPosition,
-) -> [f32; 2] {
+) -> CubeMapping {
     let size = bounds.max.x - bounds.min.x;
     let local = (point - bounds.min) / size;
-    let mut uv = if normal.x.abs() > 0.5 {
-        [local.z, 1.0 - local.y]
+    let (mut uv, mut tangent, mut bitangent) = if normal.x.abs() > 0.5 {
+        (
+            [
+                if normal.x > 0.0 {
+                    local.z
+                } else {
+                    1.0 - local.z
+                },
+                1.0 - local.y,
+            ],
+            Vec3::new(0.0, 0.0, normal.x),
+            Vec3::new(0.0, -1.0, 0.0),
+        )
     } else if normal.y.abs() > 0.5 {
-        [local.x, local.z]
+        (
+            [
+                local.x,
+                if normal.y > 0.0 {
+                    1.0 - local.z
+                } else {
+                    local.z
+                },
+            ],
+            Vec3::new(1.0, 0.0, 0.0),
+            Vec3::new(0.0, 0.0, -normal.y),
+        )
     } else {
-        [local.x, 1.0 - local.y]
+        (
+            [
+                if normal.z > 0.0 {
+                    1.0 - local.x
+                } else {
+                    local.x
+                },
+                1.0 - local.y,
+            ],
+            Vec3::new(-normal.z, 0.0, 0.0),
+            Vec3::new(0.0, -1.0, 0.0),
+        )
     };
 
     match voxel_texture_variant(voxel, 0) & 3 {
         0 => {}
-        1 => uv = [1.0 - uv[1], uv[0]],
-        2 => uv = [1.0 - uv[0], 1.0 - uv[1]],
-        _ => uv = [uv[1], 1.0 - uv[0]],
+        1 => {
+            uv = [1.0 - uv[1], uv[0]];
+            (tangent, bitangent) = (-bitangent, tangent);
+        }
+        2 => {
+            uv = [1.0 - uv[0], 1.0 - uv[1]];
+            (tangent, bitangent) = (-tangent, -bitangent);
+        }
+        _ => {
+            uv = [uv[1], 1.0 - uv[0]];
+            (tangent, bitangent) = (bitangent, -tangent);
+        }
     }
-    uv
+    CubeMapping {
+        uv,
+        tangent,
+        bitangent,
+    }
 }
 
 fn voxel_texture_variant(position: GridPosition, material: usize) -> u32 {

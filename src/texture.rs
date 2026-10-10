@@ -1,9 +1,10 @@
 use std::sync::OnceLock;
 
-use crate::material::Rgb;
+use crate::{material::Rgb, math::Vec3};
 
 const TEXTURE_WIDTH: usize = 256;
 const TEXTURE_HEIGHT: usize = 128;
+const SURFACE_MAP_SIZE: u32 = 64;
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum PlanetTexture {
@@ -36,12 +37,33 @@ struct SurfaceMap {
     height: usize,
     albedo: Vec<Rgb>,
     average_luminance: f32,
+    normals: Vec<Vec3>,
+    roughness: Vec<f32>,
+    metalness: Vec<f32>,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct TextureSample {
+    pub(crate) albedo: Rgb,
+    pub(crate) tangent_normal: Vec3,
+    pub(crate) roughness: f32,
+    pub(crate) metallic: f32,
 }
 
 impl SurfaceMap {
-    fn load(bytes: &[u8]) -> Self {
-        let image = image::load_from_memory_with_format(bytes, image::ImageFormat::Png)
+    fn load(
+        albedo_bytes: &[u8],
+        normal_bytes: &[u8],
+        roughness_bytes: &[u8],
+        metalness_bytes: Option<&[u8]>,
+    ) -> Self {
+        let image = image::load_from_memory_with_format(albedo_bytes, image::ImageFormat::Png)
             .expect("las texturas PNG embebidas deben ser válidas")
+            .resize_exact(
+                SURFACE_MAP_SIZE,
+                SURFACE_MAP_SIZE,
+                image::imageops::FilterType::Triangle,
+            )
             .to_rgb8();
         let (width, height) = image.dimensions();
         let albedo: Vec<_> = image
@@ -59,19 +81,65 @@ impl SurfaceMap {
             .map(|color| color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722)
             .sum::<f32>()
             / albedo.len() as f32;
+        let normal_image =
+            image::load_from_memory_with_format(normal_bytes, image::ImageFormat::Png)
+                .expect("los mapas normales PNG embebidos deben ser válidos")
+                .resize_exact(
+                    SURFACE_MAP_SIZE,
+                    SURFACE_MAP_SIZE,
+                    image::imageops::FilterType::Triangle,
+                )
+                .to_rgb8();
+        let normals = normal_image
+            .pixels()
+            .map(|pixel| {
+                let x = pixel[0] as f32 / 127.5 - 1.0;
+                let y = pixel[1] as f32 / 127.5 - 1.0;
+                let z = pixel[2] as f32 / 127.5 - 1.0;
+                Vec3::new(x * 0.42, y * 0.42, z.max(0.05)).normalized()
+            })
+            .collect();
+        let roughness = decode_scalar(roughness_bytes);
+        let metalness = metalness_bytes.map_or_else(|| vec![0.0; albedo.len()], decode_scalar);
+        debug_assert_eq!(normal_image.dimensions(), (width, height));
+        debug_assert_eq!(roughness.len(), albedo.len());
+        debug_assert_eq!(metalness.len(), albedo.len());
         Self {
             width: width as usize,
             height: height as usize,
             albedo,
             average_luminance,
+            normals,
+            roughness,
+            metalness,
         }
     }
 
-    fn sample(&self, uv: [f32; 2]) -> Rgb {
+    fn sample(&self, uv: [f32; 2]) -> TextureSample {
         let x = (uv[0].rem_euclid(1.0) * self.width as f32) as usize % self.width;
         let y = (uv[1].rem_euclid(1.0) * self.height as f32) as usize % self.height;
-        self.albedo[y * self.width + x]
+        let index = y * self.width + x;
+        TextureSample {
+            albedo: self.albedo[index],
+            tangent_normal: self.normals[index],
+            roughness: self.roughness[index],
+            metallic: self.metalness[index],
+        }
     }
+}
+
+fn decode_scalar(bytes: &[u8]) -> Vec<f32> {
+    image::load_from_memory_with_format(bytes, image::ImageFormat::Png)
+        .expect("los mapas escalares PNG embebidos deben ser válidos")
+        .resize_exact(
+            SURFACE_MAP_SIZE,
+            SURFACE_MAP_SIZE,
+            image::imageops::FilterType::Triangle,
+        )
+        .to_luma8()
+        .pixels()
+        .map(|pixel| pixel[0] as f32 / 255.0)
+        .collect()
 }
 
 impl SurfaceTexture {
@@ -83,33 +151,56 @@ impl SurfaceTexture {
         static ROCKS014: OnceLock<SurfaceMap> = OnceLock::new();
         static ROCKS025: OnceLock<SurfaceMap> = OnceLock::new();
 
-        let (storage, bytes) = match self {
-            Self::Ground104 => (
-                &GROUND104,
-                &include_bytes!("../assets/textures/ground104/albedo.png")[..],
-            ),
-            Self::Ground111 => (
-                &GROUND111,
-                &include_bytes!("../assets/textures/ground111/albedo.png")[..],
-            ),
-            Self::Metal034 => (
-                &METAL034,
-                &include_bytes!("../assets/textures/metal034/albedo.png")[..],
-            ),
-            Self::Metal040 => (
-                &METAL040,
-                &include_bytes!("../assets/textures/metal040/albedo.png")[..],
-            ),
-            Self::Rocks014 => (
-                &ROCKS014,
-                &include_bytes!("../assets/textures/rocks014/albedo.png")[..],
-            ),
-            Self::Rocks025 => (
-                &ROCKS025,
-                &include_bytes!("../assets/textures/rocks025/albedo.png")[..],
-            ),
-        };
-        storage.get_or_init(|| SurfaceMap::load(bytes))
+        match self {
+            Self::Ground104 => GROUND104.get_or_init(|| {
+                SurfaceMap::load(
+                    include_bytes!("../assets/textures/ground104/albedo.png"),
+                    include_bytes!("../assets/textures/ground104/normal_gl.png"),
+                    include_bytes!("../assets/textures/ground104/roughness.png"),
+                    None,
+                )
+            }),
+            Self::Ground111 => GROUND111.get_or_init(|| {
+                SurfaceMap::load(
+                    include_bytes!("../assets/textures/ground111/albedo.png"),
+                    include_bytes!("../assets/textures/ground111/normal_gl.png"),
+                    include_bytes!("../assets/textures/ground111/roughness.png"),
+                    None,
+                )
+            }),
+            Self::Metal034 => METAL034.get_or_init(|| {
+                SurfaceMap::load(
+                    include_bytes!("../assets/textures/metal034/albedo.png"),
+                    include_bytes!("../assets/textures/metal034/normal_gl.png"),
+                    include_bytes!("../assets/textures/metal034/roughness.png"),
+                    Some(include_bytes!("../assets/textures/metal034/metalness.png")),
+                )
+            }),
+            Self::Metal040 => METAL040.get_or_init(|| {
+                SurfaceMap::load(
+                    include_bytes!("../assets/textures/metal040/albedo.png"),
+                    include_bytes!("../assets/textures/metal040/normal_gl.png"),
+                    include_bytes!("../assets/textures/metal040/roughness.png"),
+                    Some(include_bytes!("../assets/textures/metal040/metalness.png")),
+                )
+            }),
+            Self::Rocks014 => ROCKS014.get_or_init(|| {
+                SurfaceMap::load(
+                    include_bytes!("../assets/textures/rocks014/albedo.png"),
+                    include_bytes!("../assets/textures/rocks014/normal_gl.png"),
+                    include_bytes!("../assets/textures/rocks014/roughness.png"),
+                    None,
+                )
+            }),
+            Self::Rocks025 => ROCKS025.get_or_init(|| {
+                SurfaceMap::load(
+                    include_bytes!("../assets/textures/rocks025/albedo.png"),
+                    include_bytes!("../assets/textures/rocks025/normal_gl.png"),
+                    include_bytes!("../assets/textures/rocks025/roughness.png"),
+                    None,
+                )
+            }),
+        }
     }
 }
 
@@ -142,16 +233,22 @@ impl Texture {
         }
     }
 
-    pub(crate) fn sample(&self, spherical_uv: [f32; 2], texture_uv: [f32; 2], variant: u32) -> Rgb {
+    pub(crate) fn sample(
+        &self,
+        spherical_uv: [f32; 2],
+        texture_uv: [f32; 2],
+        variant: u32,
+    ) -> TextureSample {
         let u = spherical_uv[0];
         let v = spherical_uv[1];
         let x = (u.rem_euclid(1.0) * self.width as f32) as usize % self.width;
         let y = (v.clamp(0.0, 1.0 - f32::EPSILON) * self.height as f32) as usize;
         let identity = self.pixels[y * self.width + x];
         let surface = self.surfaces[variant as usize % self.surfaces.len()].map();
-        let physical = surface.sample(texture_uv);
-        let normalized = physical * (0.55 / surface.average_luminance.max(0.08));
-        identity.modulate(Rgb::WHITE.mix(normalized, 0.52))
+        let mut sample = surface.sample(texture_uv);
+        let normalized = sample.albedo * (0.55 / surface.average_luminance.max(0.08));
+        sample.albedo = identity.modulate(Rgb::WHITE.mix(normalized, 0.38));
+        sample
     }
 }
 

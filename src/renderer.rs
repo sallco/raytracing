@@ -86,7 +86,12 @@ fn visible_orbits(scene: &Scene, ray: Ray) -> Rgb {
 
 fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
     let material = &scene.materials[hit.material];
-    let albedo = material.sample_albedo(hit.uv, hit.texture_uv, hit.texture_variant);
+    let surface = material.sample_surface(hit.uv, hit.texture_uv, hit.texture_variant);
+    let albedo = surface.albedo;
+    let shading_normal = (hit.tangent * surface.tangent_normal.x
+        + hit.bitangent * surface.tangent_normal.y
+        + hit.normal * surface.tangent_normal.z)
+        .normalized();
     let mut color = material.emission.modulate(albedo) + albedo * 0.11;
     let light_vector = scene.light.position - hit.point;
     let light_distance = light_vector.length();
@@ -97,20 +102,20 @@ fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
     };
 
     if !scene.occluded(shadow_ray, light_distance - SURFACE_BIAS) {
-        let diffuse = hit.normal.dot(light_direction).max(0.0);
+        let diffuse = shading_normal.dot(light_direction).max(0.0);
         let attenuation = (scene.light.intensity / (light_distance * light_distance)).min(3.0);
         color += albedo.modulate(scene.light.color) * (diffuse * attenuation);
 
         let view_direction = -ray.direction;
         let halfway = (light_direction + view_direction).normalized();
-        let shininess = 2.0 + (1.0 - material.roughness).powi(2) * 126.0;
-        let specular = hit.normal.dot(halfway).max(0.0).powf(shininess);
-        let specular_color = Rgb::WHITE.mix(albedo, material.metallic);
+        let shininess = 2.0 + (1.0 - surface.roughness).powi(2) * 126.0;
+        let specular = shading_normal.dot(halfway).max(0.0).powf(shininess);
+        let specular_color = Rgb::WHITE.mix(albedo, surface.metallic);
         color += specular_color.modulate(scene.light.color) * (specular * attenuation);
     }
 
     if material.reflectivity > 0.0 && depth < MAX_SECONDARY_BOUNCES {
-        let reflected_direction = ray.direction.reflect(hit.normal).normalized();
+        let reflected_direction = ray.direction.reflect(shading_normal).normalized();
         let reflected = trace(
             scene,
             Ray {

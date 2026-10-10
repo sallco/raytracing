@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Mul};
 
-use crate::texture::Texture;
+use crate::{math::Vec3, texture::Texture};
 
 #[derive(Clone, Copy, Debug, Default)]
 pub(crate) struct Rgb {
@@ -75,6 +75,14 @@ pub(crate) struct Material {
     texture: Option<Texture>,
 }
 
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct SurfaceSample {
+    pub(crate) albedo: Rgb,
+    pub(crate) tangent_normal: Vec3,
+    pub(crate) roughness: f32,
+    pub(crate) metallic: f32,
+}
+
 impl Material {
     pub(crate) const fn matte(name: &'static str, albedo: Rgb, roughness: f32) -> Self {
         Self {
@@ -112,14 +120,28 @@ impl Material {
         self
     }
 
-    pub(crate) fn sample_albedo(
+    pub(crate) fn sample_surface(
         &self,
         spherical_uv: [f32; 2],
         texture_uv: [f32; 2],
         variant: u32,
-    ) -> Rgb {
-        self.texture.as_ref().map_or(self.albedo, |texture| {
-            texture.sample(spherical_uv, texture_uv, variant)
-        })
+    ) -> SurfaceSample {
+        self.texture.as_ref().map_or(
+            SurfaceSample {
+                albedo: self.albedo,
+                tangent_normal: Vec3::new(0.0, 0.0, 1.0),
+                roughness: self.roughness,
+                metallic: self.metallic,
+            },
+            |texture| {
+                let sample = texture.sample(spherical_uv, texture_uv, variant);
+                SurfaceSample {
+                    albedo: sample.albedo,
+                    tangent_normal: sample.tangent_normal,
+                    roughness: self.roughness * 0.4 + sample.roughness * 0.6,
+                    metallic: self.metallic * sample.metallic,
+                }
+            },
+        )
     }
 }
