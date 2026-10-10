@@ -36,7 +36,6 @@ struct SurfaceMap {
     width: usize,
     height: usize,
     albedo: Vec<Rgb>,
-    average_luminance: f32,
     normals: Vec<Vec3>,
     roughness: Vec<f32>,
     metalness: Vec<f32>,
@@ -76,11 +75,6 @@ impl SurfaceMap {
                 )
             })
             .collect();
-        let average_luminance = albedo
-            .iter()
-            .map(|color| color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722)
-            .sum::<f32>()
-            / albedo.len() as f32;
         let normal_image =
             image::load_from_memory_with_format(normal_bytes, image::ImageFormat::Png)
                 .expect("los mapas normales PNG embebidos deben ser válidos")
@@ -108,7 +102,6 @@ impl SurfaceMap {
             width: width as usize,
             height: height as usize,
             albedo,
-            average_luminance,
             normals,
             roughness,
             metalness,
@@ -210,6 +203,7 @@ pub(crate) struct Texture {
     height: usize,
     pixels: Vec<Rgb>,
     surfaces: Vec<SurfaceTexture>,
+    tint_strength: f32,
 }
 
 impl Texture {
@@ -230,6 +224,7 @@ impl Texture {
             height: TEXTURE_HEIGHT,
             pixels,
             surfaces: surfaces.to_vec(),
+            tint_strength: planet_tint_strength(kind),
         }
     }
 
@@ -244,7 +239,7 @@ impl Texture {
         let x = (u.rem_euclid(1.0) * self.width as f32) as usize % self.width;
         let y = (v.clamp(0.0, 1.0 - f32::EPSILON) * self.height as f32) as usize;
         let variation = 0.82 + ((variant >> 24) & 0xff) as f32 / 255.0 * 0.30;
-        let identity = self.pixels[y * self.width + x] * variation;
+        let identity = self.pixels[y * self.width + x];
         let surface = self.surfaces[variant as usize % self.surfaces.len()].map();
         let scale = [0.72, 0.88, 1.04, 1.20][((variant >> 3) & 3) as usize];
         let offset = [
@@ -256,14 +251,32 @@ impl Texture {
             texture_uv[1] * scale + offset[1],
         ];
         let mut sample = surface.sample(sampled_uv);
-        let normalized = sample.albedo * (0.55 / surface.average_luminance.max(0.08));
+        let identity_luminance = identity.r * 0.2126 + identity.g * 0.7152 + identity.b * 0.0722;
+        let tint = identity * (0.55 / identity_luminance.max(0.08));
+        let tinted_albedo = sample.albedo.modulate(tint);
         let edge_distance = texture_uv[0]
             .min(1.0 - texture_uv[0])
             .min(texture_uv[1])
             .min(1.0 - texture_uv[1]);
-        let edge = 0.76 + 0.24 * (edge_distance / 0.075).clamp(0.0, 1.0);
-        sample.albedo = identity.modulate(Rgb::WHITE.mix(normalized, 0.48)) * edge;
+        let edge = 0.88 + 0.12 * (edge_distance / 0.075).clamp(0.0, 1.0);
+        sample.albedo = sample.albedo.mix(tinted_albedo, self.tint_strength) * (variation * edge);
         sample
+    }
+}
+
+fn planet_tint_strength(kind: PlanetTexture) -> f32 {
+    match kind {
+        PlanetTexture::Sun => 0.12,
+        PlanetTexture::Mercury => 0.08,
+        PlanetTexture::Venus => 0.15,
+        PlanetTexture::EarthOcean => 0.55,
+        PlanetTexture::EarthLand => 0.48,
+        PlanetTexture::Mars => 0.12,
+        PlanetTexture::Jupiter => 0.15,
+        PlanetTexture::Saturn => 0.12,
+        PlanetTexture::SaturnRing => 0.08,
+        PlanetTexture::Uranus => 0.50,
+        PlanetTexture::Neptune => 0.58,
     }
 }
 
