@@ -12,6 +12,7 @@ mod math;
 mod renderer;
 mod scene;
 mod sky;
+mod texture;
 mod world;
 
 const WIDTH: i32 = 1024;

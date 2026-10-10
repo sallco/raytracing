@@ -1,5 +1,7 @@
 use std::ops::{Add, AddAssign, Mul};
 
+use crate::texture::Texture;
+
 #[derive(Clone, Copy, Debug, Default)]
 pub(crate) struct Rgb {
     pub(crate) r: f32,
@@ -70,6 +72,7 @@ pub(crate) struct Material {
     pub(crate) reflectivity: f32,
     pub(crate) transparency: f32,
     pub(crate) refractive_index: f32,
+    texture: Option<Texture>,
 }
 
 impl Material {
@@ -83,6 +86,7 @@ impl Material {
             reflectivity: 0.0,
             transparency: 0.0,
             refractive_index: 1.0,
+            texture: None,
         }
     }
 
@@ -101,5 +105,16 @@ impl Material {
         self.transparency = transparency;
         self.refractive_index = refractive_index;
         self
+    }
+
+    pub(crate) fn textured(mut self, texture: Texture) -> Self {
+        self.texture = Some(texture);
+        self
+    }
+
+    pub(crate) fn sample_albedo(&self, u: f32, v: f32) -> Rgb {
+        self.texture
+            .as_ref()
+            .map_or(self.albedo, |texture| texture.sample(u, v))
     }
 }

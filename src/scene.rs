@@ -4,6 +4,7 @@ use crate::{
     geometry::Hit,
     material::{Material, Rgb},
     math::Vec3,
+    texture::{PlanetTexture, Texture},
     world::{CHUNK_SIZE, CelestialBody, GridPosition},
 };
 
@@ -24,19 +25,30 @@ impl Scene {
     pub(crate) fn solar_system() -> Self {
         let materials = vec![
             Material::matte("Plasma solar", Rgb::new(1.0, 0.52, 0.08), 0.9)
-                .emissive(Rgb::new(5.2, 2.1, 0.25)),
-            Material::matte("Regolito mercuriano", Rgb::new(0.38, 0.34, 0.31), 0.95),
-            Material::matte("Nubes de Venus", Rgb::new(0.86, 0.58, 0.23), 0.82),
-            Material::matte("Océano terrestre", Rgb::new(0.03, 0.18, 0.62), 0.34),
-            Material::matte("Continente terrestre", Rgb::new(0.12, 0.48, 0.16), 0.78),
-            Material::matte("Suelo marciano", Rgb::new(0.62, 0.16, 0.06), 0.92),
-            Material::matte("Atmósfera de Júpiter", Rgb::new(0.75, 0.47, 0.28), 0.72),
-            Material::matte("Atmósfera de Saturno", Rgb::new(0.82, 0.68, 0.39), 0.76),
+                .emissive(Rgb::new(5.2, 2.1, 0.25))
+                .textured(Texture::planet(PlanetTexture::Sun)),
+            Material::matte("Regolito mercuriano", Rgb::new(0.38, 0.34, 0.31), 0.95)
+                .textured(Texture::planet(PlanetTexture::Mercury)),
+            Material::matte("Nubes de Venus", Rgb::new(0.86, 0.58, 0.23), 0.82)
+                .textured(Texture::planet(PlanetTexture::Venus)),
+            Material::matte("Océano terrestre", Rgb::new(0.03, 0.18, 0.62), 0.34)
+                .textured(Texture::planet(PlanetTexture::EarthOcean)),
+            Material::matte("Continente terrestre", Rgb::new(0.12, 0.48, 0.16), 0.78)
+                .textured(Texture::planet(PlanetTexture::EarthLand)),
+            Material::matte("Suelo marciano", Rgb::new(0.62, 0.16, 0.06), 0.92)
+                .textured(Texture::planet(PlanetTexture::Mars)),
+            Material::matte("Atmósfera de Júpiter", Rgb::new(0.75, 0.47, 0.28), 0.72)
+                .textured(Texture::planet(PlanetTexture::Jupiter)),
+            Material::matte("Atmósfera de Saturno", Rgb::new(0.82, 0.68, 0.39), 0.76)
+                .textured(Texture::planet(PlanetTexture::Saturn)),
             Material::matte("Hielo de los anillos", Rgb::new(0.72, 0.68, 0.57), 0.44)
                 .reflective(0.1, 0.15)
-                .transparent(0.08, 1.31),
-            Material::matte("Hielo de Urano", Rgb::new(0.2, 0.72, 0.76), 0.4),
-            Material::matte("Hielo de Neptuno", Rgb::new(0.08, 0.24, 0.83), 0.36),
+                .transparent(0.08, 1.31)
+                .textured(Texture::planet(PlanetTexture::SaturnRing)),
+            Material::matte("Hielo de Urano", Rgb::new(0.2, 0.72, 0.76), 0.4)
+                .textured(Texture::planet(PlanetTexture::Uranus)),
+            Material::matte("Hielo de Neptuno", Rgb::new(0.08, 0.24, 0.83), 0.36)
+                .textured(Texture::planet(PlanetTexture::Neptune)),
         ];
         debug_assert_eq!(materials.len() - 1, material_id::NEPTUNE);
 
