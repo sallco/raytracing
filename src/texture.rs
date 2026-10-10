@@ -243,11 +243,26 @@ impl Texture {
         let v = spherical_uv[1];
         let x = (u.rem_euclid(1.0) * self.width as f32) as usize % self.width;
         let y = (v.clamp(0.0, 1.0 - f32::EPSILON) * self.height as f32) as usize;
-        let identity = self.pixels[y * self.width + x];
+        let variation = 0.82 + ((variant >> 24) & 0xff) as f32 / 255.0 * 0.30;
+        let identity = self.pixels[y * self.width + x] * variation;
         let surface = self.surfaces[variant as usize % self.surfaces.len()].map();
-        let mut sample = surface.sample(texture_uv);
+        let scale = [0.72, 0.88, 1.04, 1.20][((variant >> 3) & 3) as usize];
+        let offset = [
+            ((variant >> 8) & 0xff) as f32 / 255.0,
+            ((variant >> 16) & 0xff) as f32 / 255.0,
+        ];
+        let sampled_uv = [
+            texture_uv[0] * scale + offset[0],
+            texture_uv[1] * scale + offset[1],
+        ];
+        let mut sample = surface.sample(sampled_uv);
         let normalized = sample.albedo * (0.55 / surface.average_luminance.max(0.08));
-        sample.albedo = identity.modulate(Rgb::WHITE.mix(normalized, 0.38));
+        let edge_distance = texture_uv[0]
+            .min(1.0 - texture_uv[0])
+            .min(texture_uv[1])
+            .min(1.0 - texture_uv[1]);
+        let edge = 0.76 + 0.24 * (edge_distance / 0.075).clamp(0.0, 1.0);
+        sample.albedo = identity.modulate(Rgb::WHITE.mix(normalized, 0.48)) * edge;
         sample
     }
 }

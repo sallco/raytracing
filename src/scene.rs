@@ -170,7 +170,7 @@ impl Scene {
                             point: ray.at(distance),
                             normal: local_normal.rotate_y(body.rotation),
                             material: voxel.material,
-                            uv: spherical_uv(local_point),
+                            uv: spherical_uv(voxel.position.as_vec3() + Vec3::new(0.5, 0.5, 0.5)),
                             texture_uv: mapping.uv,
                             texture_variant: voxel_texture_variant(voxel.position, voxel.material),
                             tangent: mapping.tangent.rotate_y(body.rotation),
