@@ -61,8 +61,8 @@ impl Scene {
 
         for body in &self.bodies {
             let local_ray = Ray {
-                origin: ray.origin - body.center,
-                direction: ray.direction,
+                origin: (ray.origin - body.center).rotate_y(-body.rotation),
+                direction: ray.direction.rotate_y(-body.rotation),
             };
             let Some((entry, exit)) = body.bounds.intersect(local_ray, closest) else {
                 continue;
@@ -107,8 +107,8 @@ impl Scene {
                         closest = distance;
                         let local_point = local_ray.at(distance);
                         result = Some(Hit {
-                            point: local_point + body.center,
-                            normal: bounds.normal_at(local_point),
+                            point: ray.at(distance),
+                            normal: bounds.normal_at(local_point).rotate_y(body.rotation),
                             material: voxel.material,
                         });
                     }

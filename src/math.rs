@@ -52,6 +52,15 @@ impl Vec3 {
         self - normal * (2.0 * self.dot(normal))
     }
 
+    pub(crate) fn rotate_y(self, angle: f32) -> Self {
+        let (sine, cosine) = angle.sin_cos();
+        Self::new(
+            cosine * self.x + sine * self.z,
+            self.y,
+            -sine * self.x + cosine * self.z,
+        )
+    }
+
     pub(crate) fn lerp(self, end: Self, amount: f32) -> Self {
         self + (end - self) * amount
     }
