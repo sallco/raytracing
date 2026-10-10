@@ -25,8 +25,10 @@ Está implementado:
 - Animación actualizada a 30 pasos por segundo con reutilización del framebuffer.
 - Modo reproducible de medición con `--benchmark`.
 - Texturas CC0 de ambientCG optimizadas y documentadas, con albedo, normal GL,
-  roughness y metalness cuando está disponible; las 16 familias proporcionadas
+  roughness y metalness cuando está disponible; las 17 familias proporcionadas
   están versionadas como PNG y asignadas a la escena.
+- Tierra con masas continentales contiguas texturizadas mediante Grass005 y
+  océanos lisos, azules y ligeramente reflectantes.
 - Mapeo independiente por cubo y por cara, con recorte, orientación, tinte y
   variación deterministas entre varios materiales dentro de cada planeta; no
   existe una envoltura de textura continua sobre el cuerpo completo.
