@@ -45,6 +45,7 @@ fn trace(scene: &Scene, ray: Ray, depth: u8) -> Rgb {
 
 fn background(scene: &Scene, ray: Ray) -> Rgb {
     let mut color = sky::sample(ray.direction);
+    color += visible_orbits(scene, ray);
     let to_sun = scene.light.position - ray.origin;
     let projection = to_sun.dot(ray.direction);
     if projection > 0.0 {
@@ -54,6 +55,33 @@ fn background(scene: &Scene, ray: Ray) -> Rgb {
         color += Rgb::new(1.0, 0.42, 0.06) * halo;
     }
     color
+}
+
+fn visible_orbits(scene: &Scene, ray: Ray) -> Rgb {
+    const ORBIT_PLANE_Y: f32 = -0.55;
+    const HALF_WIDTH: f32 = 0.22;
+
+    if ray.direction.y.abs() < f32::EPSILON {
+        return Rgb::BLACK;
+    }
+    let distance = (ORBIT_PLANE_Y - ray.origin.y) / ray.direction.y;
+    if distance <= 0.0 {
+        return Rgb::BLACK;
+    }
+
+    let point = ray.at(distance);
+    let radius = (point.x * point.x + point.z * point.z).sqrt();
+    let proximity = scene
+        .bodies
+        .iter()
+        .filter_map(|body| body.orbit.map(|orbit| (radius - orbit.radius).abs()))
+        .fold(f32::INFINITY, f32::min);
+    if proximity >= HALF_WIDTH {
+        return Rgb::BLACK;
+    }
+
+    let strength = (1.0 - proximity / HALF_WIDTH).powi(2);
+    Rgb::new(0.09, 0.19, 0.34) * strength
 }
 
 fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
