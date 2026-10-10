@@ -2,7 +2,7 @@
 
 ## Primera versión funcional
 
-La primera versión funcional queda cerrada con un sistema solar estático de
+La primera versión funcional queda cerrada con un sistema solar animado de
 6211 voxeles de superficie. La escena contiene únicamente el Sol, los ocho
 planetas y los anillos de Saturno.
 
@@ -19,21 +19,21 @@ Está implementado:
   la distancia inicial es una sugerencia y la rueda conserva el zoom elegido.
 - HUD con FPS, tiempo de render, nombre, tipo, voxeles y material.
 - Escala visual independiente de la resolución voxel de cada planeta.
-- Caché del último framebuffer cuando la escena permanece inmóvil.
+- Ocho trayectorias orbitales procedurales visibles.
+- Movimiento orbital lento ligado al tiempo real y rotación axial local.
+- Animación actualizada a 30 pasos por segundo con reutilización del framebuffer.
 - Modo reproducible de medición con `--benchmark`.
 
 ## Próximas iteraciones
 
 Queda pendiente, en orden aproximado:
 
-1. Añadir órbitas visibles y animar el movimiento orbital.
-2. Incorporar texturas CC0 optimizadas y documentar sus licencias.
-3. Aplicar mapas normales y mejorar los patrones visuales de cada planeta.
-4. Añadir rotación local de los cuerpos.
-5. Reintroducir un cinturón de asteroides con composición y densidad controladas.
-6. Incorporar estaciones espaciales, satélites y naves como elementos secundarios.
-7. Mejorar reflexión, refracción y materiales contextuales.
-8. Continuar optimizando el render durante movimiento de cámara y animaciones.
+1. Incorporar texturas CC0 optimizadas y documentar sus licencias.
+2. Aplicar mapas normales y mejorar los patrones visuales de cada planeta.
+3. Reintroducir un cinturón de asteroides con composición y densidad controladas.
+4. Incorporar estaciones espaciales, satélites y naves como elementos secundarios.
+5. Mejorar reflexión, refracción y materiales contextuales.
+6. Continuar optimizando el render durante movimiento de cámara y animaciones.
 
 Los elementos secundarios deben añadirse después de consolidar la lectura visual
 del sistema solar y nunca volver a dominar u ocultar los planetas.

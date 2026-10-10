@@ -1,14 +1,14 @@
 # Raytracing
 
 Diorama 3D renderizado mediante raytracing por CPU para el curso de Gráficas.
-La primera versión presenta un sistema solar estático formado por 6211 cubos de
+La primera versión presenta un sistema solar animado formado por 6211 cubos de
 superficie. `raylib` se limita a ventana, entrada, texto y presentación del
 framebuffer; la cámara, intersecciones, iluminación y efectos se calculan en CPU.
 
 La escena se concentra exclusivamente en el Sol y los ocho planetas, incluidos
-los anillos de Saturno. Incluye cielo estelar procedural, halo solar, luz directa,
-ambiente tenue, sombras, reflexión y refracción con un máximo de dos rebotes
-secundarios.
+los anillos de Saturno. Incluye trayectorias orbitales visibles, traslación y
+rotación planetaria, cielo estelar procedural, halo solar, luz directa, ambiente
+tenue, sombras, reflexión y refracción con un máximo de dos rebotes secundarios.
 
 ## Entorno
 
@@ -46,9 +46,9 @@ El modo de medición genera un cuadro completo de `1024×576` sin abrir una vent
 cargo run --release -- --benchmark
 ```
 
-Los cuadros inmóviles se reutilizan para mantener fluida la presentación. La
-escena vuelve a trazarse cuando cambia la cámara o durante una transición de
-enfoque.
+La simulación usa tiempo real y actualiza la animación a 30 pasos por segundo.
+Entre actualizaciones se reutiliza el último framebuffer para conservar la
+respuesta del HUD y los controles.
 
 ## Arquitectura
 
@@ -57,8 +57,8 @@ enfoque.
 - Los voxeles se agrupan en chunks locales de `8×8×8`.
 - Cada rayo descarta cuerpos por AABB y recorre sus chunks mediante DDA.
 - El framebuffer se divide en hasta 12 franjas usando `std::thread::scope`.
-- Los cuerpos permanecen en coordenadas locales para facilitar transformaciones
-  posteriores.
+- Los cuerpos permanecen en coordenadas locales; cada rayo se transforma para
+  rotarlos sin mover miles de voxeles.
 
 El perfil de desarrollo usa optimización moderada para conservar una iteración
 fluida. El perfil de lanzamiento habilita optimización máxima y LTO fino para
