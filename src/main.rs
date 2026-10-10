@@ -42,6 +42,7 @@ fn main() {
     let scene = scene::Scene::solar_system();
     let mut camera = camera::Camera::overview();
     let mut selection = None;
+    let mut applying_default_zoom = false;
     let mut returning_to_overview = false;
     let mut dirty = true;
     let mut render_time_ms = 0.0;
@@ -58,16 +59,19 @@ fn main() {
         let wheel = window.get_mouse_wheel_move();
         if wheel.abs() > f32::EPSILON {
             camera.zoom(wheel);
+            applying_default_zoom = false;
             returning_to_overview = false;
             dirty = true;
         }
         if window.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
             selection = None;
+            applying_default_zoom = false;
             returning_to_overview = true;
             dirty = true;
         }
         if window.is_key_pressed(KeyboardKey::KEY_RIGHT) {
             selection = Some(selection.map_or(0, |index| (index + 1) % scene.bodies.len()));
+            applying_default_zoom = true;
             returning_to_overview = false;
             dirty = true;
         }
@@ -75,12 +79,18 @@ fn main() {
             selection = Some(selection.map_or(scene.bodies.len() - 1, |index| {
                 (index + scene.bodies.len() - 1) % scene.bodies.len()
             }));
+            applying_default_zoom = true;
             returning_to_overview = false;
             dirty = true;
         }
         if let Some(index) = selection {
             let body = &scene.bodies[index];
-            dirty |= camera.focus(body.center, body.focus_distance);
+            dirty |= camera.focus_target(body.center);
+            if applying_default_zoom {
+                let zooming = camera.focus_distance(body.focus_distance);
+                dirty |= zooming;
+                applying_default_zoom = zooming;
+            }
         } else if returning_to_overview {
             let transitioning = camera.transition_to_overview();
             dirty |= transitioning;
