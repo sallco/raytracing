@@ -125,8 +125,32 @@ impl Scene {
                     ],
                 ),
             ),
+            Material::matte("Casco de aleación", Rgb::new(0.82, 0.85, 0.90), 0.38)
+                .reflective(0.65, 0.25)
+                .textured(Texture::planet(
+                    PlanetTexture::Station,
+                    &[SurfaceTexture::Metal040, SurfaceTexture::Metal056C],
+                )),
+            Material::matte("Panel fotovoltaico", Rgb::new(0.06, 0.15, 0.42), 0.22)
+                .reflective(0.80, 0.45)
+                .textured(Texture::planet(
+                    PlanetTexture::SolarArray,
+                    &[SurfaceTexture::Metal046B, SurfaceTexture::Metal061B],
+                )),
+            Material::matte("Blindaje compuesto", Rgb::new(0.24, 0.26, 0.32), 0.42)
+                .reflective(0.50, 0.22)
+                .textured(Texture::planet(
+                    PlanetTexture::Spacecraft,
+                    &[
+                        SurfaceTexture::Metal041B,
+                        SurfaceTexture::Metal041C,
+                        SurfaceTexture::Metal053C,
+                    ],
+                )),
+            Material::matte("Propulsor de iones", Rgb::new(0.25, 0.75, 1.0), 0.10)
+                .emissive(Rgb::new(2.5, 6.0, 9.0)),
         ];
-        debug_assert_eq!(materials.len() - 1, material_id::NEPTUNE);
+        debug_assert_eq!(materials.len() - 1, material_id::ION_ENGINE);
 
         Self {
             materials,
@@ -146,6 +170,13 @@ impl Scene {
     pub(crate) fn update(&mut self, delta_seconds: f32) {
         for body in &mut self.bodies {
             body.advance(delta_seconds);
+        }
+        for index in 0..self.bodies.len() {
+            if let Some(parent_idx) = self.bodies[index].orbit.and_then(|orbit| orbit.parent) {
+                let parent_center = self.bodies[parent_idx].center;
+                let offset = self.bodies[index].orbit.unwrap().offset();
+                self.bodies[index].center = parent_center + offset;
+            }
         }
     }
 

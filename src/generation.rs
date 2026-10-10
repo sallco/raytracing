@@ -15,6 +15,10 @@ pub(crate) mod material_id {
     pub(crate) const SATURN_RING: usize = 8;
     pub(crate) const URANUS: usize = 9;
     pub(crate) const NEPTUNE: usize = 10;
+    pub(crate) const STATION_HULL: usize = 11;
+    pub(crate) const SOLAR_PANEL: usize = 12;
+    pub(crate) const SHIP_HULL: usize = 13;
+    pub(crate) const ION_ENGINE: usize = 14;
 }
 
 #[derive(Clone, Copy)]
@@ -33,6 +37,7 @@ impl BodyScale {
 }
 
 pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
+    let earth_pos = orbital_position(18.0, 4.4);
     vec![
         body(
             "Sol",
@@ -65,13 +70,15 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
         body(
             "Tierra",
             "Planeta oceánico",
-            orbital_position(18.0, 4.4),
+            earth_pos,
             10.0,
             BodyScale::new(2.1, 7.0),
             &[material_id::EARTH_OCEAN, material_id::EARTH_LAND],
             23,
         )
         .animated(Some(Orbit::new(18.0, 4.4, 0.065)), 0.16),
+        space_station(earth_pos),
+        satellite(earth_pos),
         body_at_angle(
             "Marte",
             "Planeta rocoso",
@@ -81,6 +88,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             24,
             0.15,
         ),
+        spacecraft(),
         body_at_angle(
             "Júpiter",
             "Gigante gaseoso",
@@ -235,6 +243,249 @@ fn saturn() -> CelestialBody {
         voxels,
     )
     .animated(Some(Orbit::new(34.0, 2.35, 0.024)), 0.25)
+}
+
+fn space_station(earth_center: Vec3) -> CelestialBody {
+    const VOXEL_SCALE: f32 = 0.085;
+    const FOCUS_DISTANCE: f32 = 2.8;
+    let mut voxels = Vec::new();
+
+    for z in -5..=5 {
+        voxels.push(Voxel {
+            position: GridPosition::new(0, 0, z),
+            material: material_id::STATION_HULL,
+        });
+        if (-3..=3).contains(&z) {
+            voxels.push(Voxel {
+                position: GridPosition::new(1, 0, z),
+                material: material_id::STATION_HULL,
+            });
+            voxels.push(Voxel {
+                position: GridPosition::new(-1, 0, z),
+                material: material_id::STATION_HULL,
+            });
+            voxels.push(Voxel {
+                position: GridPosition::new(0, 1, z),
+                material: material_id::STATION_HULL,
+            });
+            voxels.push(Voxel {
+                position: GridPosition::new(0, -1, z),
+                material: material_id::STATION_HULL,
+            });
+        }
+    }
+
+    for x in -3..=3 {
+        if x != 0 {
+            voxels.push(Voxel {
+                position: GridPosition::new(x, 0, 0),
+                material: material_id::STATION_HULL,
+            });
+            voxels.push(Voxel {
+                position: GridPosition::new(x, 0, 1),
+                material: material_id::STATION_HULL,
+            });
+        }
+    }
+
+    for x in -8..=8 {
+        voxels.push(Voxel {
+            position: GridPosition::new(x, 2, 0),
+            material: material_id::STATION_HULL,
+        });
+    }
+    voxels.push(Voxel {
+        position: GridPosition::new(0, 1, 0),
+        material: material_id::STATION_HULL,
+    });
+
+    for &wing_x in &[-8, -7, -6, -5, 5, 6, 7, 8] {
+        for z in -3..=3 {
+            if z != 0 {
+                voxels.push(Voxel {
+                    position: GridPosition::new(wing_x, 2, z),
+                    material: material_id::SOLAR_PANEL,
+                });
+            }
+        }
+    }
+
+    voxels.push(Voxel {
+        position: GridPosition::new(0, -2, 0),
+        material: material_id::STATION_HULL,
+    });
+
+    let orbit = Orbit::secondary(3.9, 1.2, 0.42, 0.28, 3);
+    CelestialBody::new(
+        "Estación Orbital",
+        "Estación espacial",
+        earth_center + orbit.offset(),
+        FOCUS_DISTANCE,
+        VOXEL_SCALE,
+        material_id::STATION_HULL,
+        voxels,
+    )
+    .animated(Some(orbit), 0.15)
+}
+
+fn satellite(earth_center: Vec3) -> CelestialBody {
+    const VOXEL_SCALE: f32 = 0.065;
+    const FOCUS_DISTANCE: f32 = 1.9;
+    let mut voxels = Vec::new();
+
+    for y in -1..=1 {
+        for x in -1..=1 {
+            for z in -1..=1 {
+                voxels.push(Voxel {
+                    position: GridPosition::new(x, y, z),
+                    material: material_id::STATION_HULL,
+                });
+            }
+        }
+    }
+
+    voxels.push(Voxel {
+        position: GridPosition::new(0, 0, 2),
+        material: material_id::STATION_HULL,
+    });
+    for dx in -1..=1 {
+        for dy in -1..=1 {
+            voxels.push(Voxel {
+                position: GridPosition::new(dx, dy, 3),
+                material: material_id::STATION_HULL,
+            });
+        }
+    }
+    voxels.push(Voxel {
+        position: GridPosition::new(0, 0, 4),
+        material: material_id::SOLAR_PANEL,
+    });
+
+    voxels.push(Voxel {
+        position: GridPosition::new(0, 2, 0),
+        material: material_id::STATION_HULL,
+    });
+    voxels.push(Voxel {
+        position: GridPosition::new(0, 3, 0),
+        material: material_id::STATION_HULL,
+    });
+
+    for &wing_x in &[-5, -4, -3, -2, 2, 3, 4, 5] {
+        for y in -1..=1 {
+            voxels.push(Voxel {
+                position: GridPosition::new(wing_x, y, 0),
+                material: material_id::SOLAR_PANEL,
+            });
+        }
+    }
+
+    let orbit = Orbit::secondary(4.7, 3.8, -0.35, -0.42, 3);
+    CelestialBody::new(
+        "Ik'sat",
+        "Satélite artificial",
+        earth_center + orbit.offset(),
+        FOCUS_DISTANCE,
+        VOXEL_SCALE,
+        material_id::STATION_HULL,
+        voxels,
+    )
+    .animated(Some(orbit), -0.20)
+}
+
+fn spacecraft() -> CelestialBody {
+    const VOXEL_SCALE: f32 = 0.095;
+    const FOCUS_DISTANCE: f32 = 2.7;
+    let mut voxels = Vec::new();
+
+    voxels.push(Voxel {
+        position: GridPosition::new(0, 0, 6),
+        material: material_id::SHIP_HULL,
+    });
+    voxels.push(Voxel {
+        position: GridPosition::new(0, 0, 5),
+        material: material_id::SHIP_HULL,
+    });
+
+    for y in -1..=1 {
+        for x in -1..=1 {
+            voxels.push(Voxel {
+                position: GridPosition::new(x, y, 4),
+                material: material_id::SHIP_HULL,
+            });
+        }
+    }
+    voxels.push(Voxel {
+        position: GridPosition::new(0, 1, 4),
+        material: material_id::SOLAR_PANEL,
+    });
+
+    for z in 0..=3 {
+        voxels.push(Voxel {
+            position: GridPosition::new(0, 0, z),
+            material: material_id::SHIP_HULL,
+        });
+        voxels.push(Voxel {
+            position: GridPosition::new(0, 1, z),
+            material: material_id::SHIP_HULL,
+        });
+        for dy in -1..=0 {
+            voxels.push(Voxel {
+                position: GridPosition::new(-1, dy, z),
+                material: material_id::STATION_HULL,
+            });
+            voxels.push(Voxel {
+                position: GridPosition::new(1, dy, z),
+                material: material_id::STATION_HULL,
+            });
+        }
+    }
+
+    for &wing_x in &[-3, -2, 2, 3] {
+        for z in 1..=3 {
+            voxels.push(Voxel {
+                position: GridPosition::new(wing_x, 0, z),
+                material: material_id::SOLAR_PANEL,
+            });
+        }
+    }
+
+    for z in -2..=-1 {
+        for y in -1..=1 {
+            for x in -1..=1 {
+                voxels.push(Voxel {
+                    position: GridPosition::new(x, y, z),
+                    material: material_id::SHIP_HULL,
+                });
+            }
+        }
+    }
+
+    for &engine_x in &[-1, 1] {
+        voxels.push(Voxel {
+            position: GridPosition::new(engine_x, 0, -3),
+            material: material_id::ION_ENGINE,
+        });
+        voxels.push(Voxel {
+            position: GridPosition::new(engine_x, 1, -3),
+            material: material_id::SHIP_HULL,
+        });
+        voxels.push(Voxel {
+            position: GridPosition::new(engine_x, -1, -3),
+            material: material_id::SHIP_HULL,
+        });
+    }
+
+    let orbit = Orbit::independent(20.2, 4.9, 0.058, 0.06);
+    CelestialBody::new(
+        "Nave Exploradora",
+        "Nave espacial",
+        orbit.position(),
+        FOCUS_DISTANCE,
+        VOXEL_SCALE,
+        material_id::SHIP_HULL,
+        voxels,
+    )
+    .animated(Some(orbit), 0.18)
 }
 
 fn orbital_position(radius: f32, angle: f32) -> Vec3 {

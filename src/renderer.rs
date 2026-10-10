@@ -74,8 +74,13 @@ fn visible_orbits(scene: &Scene, ray: Ray) -> Rgb {
     let proximity = scene
         .bodies
         .iter()
-        .filter_map(|body| body.orbit.map(|orbit| (radius - orbit.radius).abs()))
+        .filter_map(|body| {
+            body.orbit
+                .filter(|orbit| orbit.show_path)
+                .map(|orbit| (radius - orbit.radius).abs())
+        })
         .fold(f32::INFINITY, f32::min);
+
     if proximity >= HALF_WIDTH {
         return Rgb::BLACK;
     }

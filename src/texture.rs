@@ -16,6 +16,9 @@ pub(crate) enum PlanetTexture {
     SaturnRing,
     Uranus,
     Neptune,
+    Station,
+    SolarArray,
+    Spacecraft,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -269,6 +272,9 @@ fn planet_tint(kind: PlanetTexture) -> Rgb {
         PlanetTexture::SaturnRing => Rgb::new(0.78, 0.73, 0.62),
         PlanetTexture::Uranus => Rgb::new(0.35, 0.82, 0.84),
         PlanetTexture::Neptune => Rgb::new(0.10, 0.30, 0.95),
+        PlanetTexture::Station => Rgb::new(0.88, 0.92, 0.98),
+        PlanetTexture::SolarArray => Rgb::new(0.10, 0.28, 0.85),
+        PlanetTexture::Spacecraft => Rgb::new(0.55, 0.60, 0.68),
     }
 }
 
@@ -284,5 +290,8 @@ fn planet_tint_strength(kind: PlanetTexture) -> f32 {
         PlanetTexture::SaturnRing => 0.08,
         PlanetTexture::Uranus => 0.50,
         PlanetTexture::Neptune => 0.58,
+        PlanetTexture::Station => 0.06,
+        PlanetTexture::SolarArray => 0.40,
+        PlanetTexture::Spacecraft => 0.10,
     }
 }

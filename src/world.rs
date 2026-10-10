@@ -9,6 +9,9 @@ pub(crate) struct Orbit {
     pub(crate) radius: f32,
     pub(crate) angle: f32,
     pub(crate) angular_speed: f32,
+    pub(crate) inclination: f32,
+    pub(crate) parent: Option<usize>,
+    pub(crate) show_path: bool,
 }
 
 impl Orbit {
@@ -17,15 +20,56 @@ impl Orbit {
             radius,
             angle,
             angular_speed,
+            inclination: 0.0,
+            parent: None,
+            show_path: true,
         }
     }
 
-    fn position(self) -> Vec3 {
+    pub(crate) const fn secondary(
+        radius: f32,
+        angle: f32,
+        angular_speed: f32,
+        inclination: f32,
+        parent: usize,
+    ) -> Self {
+        Self {
+            radius,
+            angle,
+            angular_speed,
+            inclination,
+            parent: Some(parent),
+            show_path: false,
+        }
+    }
+
+    pub(crate) const fn independent(
+        radius: f32,
+        angle: f32,
+        angular_speed: f32,
+        inclination: f32,
+    ) -> Self {
+        Self {
+            radius,
+            angle,
+            angular_speed,
+            inclination,
+            parent: None,
+            show_path: false,
+        }
+    }
+
+    pub(crate) fn offset(self) -> Vec3 {
+        let (sin_inc, cos_inc) = self.inclination.sin_cos();
         Vec3::new(
             self.angle.cos() * self.radius,
-            0.0,
-            self.angle.sin() * self.radius,
+            self.angle.sin() * sin_inc * self.radius,
+            self.angle.sin() * cos_inc * self.radius,
         )
+    }
+
+    pub(crate) fn position(self) -> Vec3 {
+        self.offset()
     }
 }
 
@@ -175,7 +219,9 @@ impl CelestialBody {
     pub(crate) fn animated(mut self, orbit: Option<Orbit>, rotation_speed: f32) -> Self {
         self.orbit = orbit;
         self.rotation_speed = rotation_speed;
-        if let Some(orbit) = self.orbit {
+        if let Some(orbit) = self.orbit
+            && orbit.parent.is_none()
+        {
             self.center = orbit.position();
         }
         self
@@ -185,7 +231,9 @@ impl CelestialBody {
         if let Some(orbit) = &mut self.orbit {
             orbit.angle = (orbit.angle + orbit.angular_speed * delta_seconds)
                 .rem_euclid(std::f32::consts::TAU);
-            self.center = orbit.position();
+            if orbit.parent.is_none() {
+                self.center = orbit.position();
+            }
         }
         self.rotation =
             (self.rotation + self.rotation_speed * delta_seconds).rem_euclid(std::f32::consts::TAU);
