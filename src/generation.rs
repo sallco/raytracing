@@ -179,16 +179,35 @@ fn sphere_surface(radius: f32, materials: &[usize], seed: u32) -> Vec<Voxel> {
                     neighbor.dot(neighbor) > radius_squared
                 });
                 if exposed {
-                    let variation = hash(x, y, z, seed) as usize % materials.len();
+                    let material =
+                        if materials == [material_id::EARTH_OCEAN, material_id::EARTH_LAND] {
+                            earth_material(center, x, y, z, seed)
+                        } else {
+                            let variation = hash(x, y, z, seed) as usize % materials.len();
+                            materials[variation]
+                        };
                     voxels.push(Voxel {
                         position: GridPosition::new(x, y, z),
-                        material: materials[variation],
+                        material,
                     });
                 }
             }
         }
     }
     voxels
+}
+
+fn earth_material(center: Vec3, x: i32, y: i32, z: i32, seed: u32) -> usize {
+    let direction = center.normalized();
+    let coastline = (direction.x * 3.7 + direction.z * 1.3).sin() * 0.55
+        + (direction.z * 4.1 - direction.y * 1.7).cos() * 0.35
+        + ((direction.x + direction.y - direction.z) * 6.0).sin() * 0.20;
+    let detail = hash(x, y, z, seed) as f32 / u32::MAX as f32 * 0.16 - 0.08;
+    if coastline + detail > 0.16 {
+        material_id::EARTH_LAND
+    } else {
+        material_id::EARTH_OCEAN
+    }
 }
 
 fn saturn() -> CelestialBody {
