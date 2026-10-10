@@ -22,7 +22,11 @@ Cada cara visible usa coordenadas UV locales al cubo: no se proyecta una sola
 imagen sobre el planeta completo. La posición del voxel determina de forma
 estable qué recurso recibe, su orientación, escala, recorte y variación de
 luminosidad. El patrón planetario se evalúa en el centro del voxel para obtener
-un único tinte por cubo; los mapas PBR aportan el detalle dentro de cada cara.
+un único tinte por cubo; el albedo de ambientCG es la superficie principal y no
+una modulación secundaria. En los cuerpos rocosos y gigantes cálidos conserva
+entre 85% y 92% de su color original; Tierra y los gigantes azules reciben más
+tinte para mantener su identidad. Los mapas PBR aportan el detalle dentro de
+cada cara.
 Una separación tonal estrecha en los bordes evita que dos caras coplanares se
 lean como una superficie continua.
 
