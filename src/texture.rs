@@ -9,7 +9,6 @@ pub(crate) enum PlanetTexture {
     Sun,
     Mercury,
     Venus,
-    EarthOcean,
     EarthLand,
     Mars,
     Jupiter,
@@ -21,6 +20,7 @@ pub(crate) enum PlanetTexture {
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum SurfaceTexture {
+    Grass005,
     Ground104,
     Ground111,
     Metal034,
@@ -146,6 +146,7 @@ fn decode_scalar(bytes: &[u8]) -> Vec<f32> {
 impl SurfaceTexture {
     fn map(self) -> &'static SurfaceMap {
         static GROUND104: OnceLock<SurfaceMap> = OnceLock::new();
+        static GRASS005: OnceLock<SurfaceMap> = OnceLock::new();
         static GROUND111: OnceLock<SurfaceMap> = OnceLock::new();
         static METAL034: OnceLock<SurfaceMap> = OnceLock::new();
         static METAL040: OnceLock<SurfaceMap> = OnceLock::new();
@@ -190,6 +191,7 @@ impl SurfaceTexture {
         }
 
         match self {
+            Self::Grass005 => load_surface!(GRASS005, "Grass005"),
             Self::Ground104 => load_surface!(GROUND104, "Ground104"),
             Self::Ground111 => load_surface!(GROUND111, "Ground111"),
             Self::Metal034 => load_surface!(METAL034, "Metal034", metal),
@@ -260,7 +262,6 @@ fn planet_tint(kind: PlanetTexture) -> Rgb {
         PlanetTexture::Sun => Rgb::new(1.0, 0.62, 0.12),
         PlanetTexture::Mercury => Rgb::new(0.46, 0.43, 0.40),
         PlanetTexture::Venus => Rgb::new(0.92, 0.63, 0.26),
-        PlanetTexture::EarthOcean => Rgb::new(0.04, 0.25, 0.85),
         PlanetTexture::EarthLand => Rgb::new(0.18, 0.58, 0.20),
         PlanetTexture::Mars => Rgb::new(0.78, 0.24, 0.08),
         PlanetTexture::Jupiter => Rgb::new(0.82, 0.58, 0.38),
@@ -276,8 +277,7 @@ fn planet_tint_strength(kind: PlanetTexture) -> f32 {
         PlanetTexture::Sun => 0.12,
         PlanetTexture::Mercury => 0.08,
         PlanetTexture::Venus => 0.15,
-        PlanetTexture::EarthOcean => 0.55,
-        PlanetTexture::EarthLand => 0.48,
+        PlanetTexture::EarthLand => 0.10,
         PlanetTexture::Mars => 0.12,
         PlanetTexture::Jupiter => 0.15,
         PlanetTexture::Saturn => 0.12,

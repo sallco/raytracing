@@ -51,25 +51,10 @@ impl Scene {
                     ],
                 ),
             ),
-            Material::matte("Océano terrestre", Rgb::new(0.03, 0.18, 0.62), 0.34).textured(
-                Texture::planet(
-                    PlanetTexture::EarthOcean,
-                    &[
-                        SurfaceTexture::Metal040,
-                        SurfaceTexture::Metal046B,
-                        SurfaceTexture::Metal061B,
-                    ],
-                ),
-            ),
+            Material::matte("Océano terrestre", Rgb::new(0.025, 0.16, 0.68), 0.2)
+                .reflective(0.0, 0.14),
             Material::matte("Continente terrestre", Rgb::new(0.12, 0.48, 0.16), 0.78).textured(
-                Texture::planet(
-                    PlanetTexture::EarthLand,
-                    &[
-                        SurfaceTexture::Ground111,
-                        SurfaceTexture::Rocks012,
-                        SurfaceTexture::Rocks025,
-                    ],
-                ),
+                Texture::planet(PlanetTexture::EarthLand, &[SurfaceTexture::Grass005]),
             ),
             Material::matte("Suelo marciano", Rgb::new(0.62, 0.16, 0.06), 0.92).textured(
                 Texture::planet(
