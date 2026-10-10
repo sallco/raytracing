@@ -15,7 +15,8 @@ Está implementado:
 - Reflexión y refracción limitadas a dos rebotes secundarios.
 - Skybox procedural con estrellas y nebulosa.
 - Cámara orbital con arrastre, zoom y transición suave a la vista general con `Esc`.
-- Selección de cuerpos con flechas y transición suave a una vista de detalle.
+- Selección de cuerpos con flechas y transición suave a una vista de detalle;
+  la distancia inicial es una sugerencia y la rueda conserva el zoom elegido.
 - HUD con FPS, tiempo de render, nombre, tipo, voxeles y material.
 - Escala visual independiente de la resolución voxel de cada planeta.
 - Caché del último framebuffer cuando la escena permanece inmóvil.
