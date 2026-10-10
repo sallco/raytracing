@@ -47,7 +47,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
         body_at_angle(
             "Mercurio",
             "Planeta rocoso",
-            Orbit::new(10.0, 0.25, 0.10),
+            Orbit::new(10.0, 0.25, 0.105),
             BodyScale::new(1.35, 5.0),
             material_id::MERCURY,
             21,
@@ -56,7 +56,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
         body_at_angle(
             "Venus",
             "Planeta rocoso",
-            Orbit::new(14.0, 2.55, 0.075),
+            Orbit::new(14.0, 2.55, 0.080),
             BodyScale::new(1.9, 6.0),
             material_id::VENUS,
             22,
@@ -71,11 +71,11 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             &[material_id::EARTH_OCEAN, material_id::EARTH_LAND],
             23,
         )
-        .animated(Some(Orbit::new(18.0, 4.4, 0.06)), 0.20),
+        .animated(Some(Orbit::new(18.0, 4.4, 0.065)), 0.20),
         body_at_angle(
             "Marte",
             "Planeta rocoso",
-            Orbit::new(22.0, 5.55, 0.05),
+            Orbit::new(22.0, 5.55, 0.052),
             BodyScale::new(1.65, 5.5),
             material_id::MARS,
             24,
@@ -84,7 +84,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
         body_at_angle(
             "Júpiter",
             "Gigante gaseoso",
-            Orbit::new(30.0, 1.15, 0.035),
+            Orbit::new(30.0, 1.15, 0.032),
             BodyScale::new(4.3, 10.0),
             material_id::JUPITER,
             25,
@@ -94,7 +94,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
         body_at_angle(
             "Urano",
             "Gigante helado",
-            Orbit::new(38.0, 3.55, 0.022),
+            Orbit::new(38.0, 3.55, 0.017),
             BodyScale::new(3.0, 8.0),
             material_id::URANUS,
             27,
@@ -103,7 +103,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
         body_at_angle(
             "Neptuno",
             "Gigante helado",
-            Orbit::new(42.0, 5.0, 0.018),
+            Orbit::new(42.0, 5.0, 0.013),
             BodyScale::new(2.85, 8.0),
             material_id::NEPTUNE,
             28,
@@ -215,7 +215,7 @@ fn saturn() -> CelestialBody {
         material_id::SATURN,
         voxels,
     )
-    .animated(Some(Orbit::new(34.0, 2.35, 0.028)), 0.24)
+    .animated(Some(Orbit::new(34.0, 2.35, 0.024)), 0.24)
 }
 
 fn orbital_position(radius: f32, angle: f32) -> Vec3 {
