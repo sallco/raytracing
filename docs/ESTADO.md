@@ -20,7 +20,8 @@ Está implementado:
 - HUD con FPS, tiempo de render, nombre, tipo, voxeles y material.
 - Escala visual independiente de la resolución voxel de cada planeta.
 - Ocho trayectorias orbitales procedurales visibles.
-- Movimiento orbital lento ligado al tiempo real y rotación axial local.
+- Movimiento orbital lento ligado al tiempo real y rotación axial local, con
+  proporciones visuales inspiradas en la jerarquía real de periodos planetarios.
 - Animación actualizada a 30 pasos por segundo con reutilización del framebuffer.
 - Modo reproducible de medición con `--benchmark`.
 
