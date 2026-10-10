@@ -40,7 +40,7 @@ su nombre, tipo, cantidad de cubos y material predominante.
 
 ## Medir rendimiento
 
-El modo de medición genera un cuadro completo de `960×540` sin abrir una ventana:
+El modo de medición genera un cuadro completo de `1024×576` sin abrir una ventana:
 
 ```bash
 cargo run --release -- --benchmark

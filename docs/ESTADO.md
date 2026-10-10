@@ -8,7 +8,7 @@ planetas y los anillos de Saturno.
 
 Está implementado:
 
-- Raytracing por CPU a 960×540 con framebuffer presentado mediante raylib.
+- Raytracing por CPU a 1024×576 con framebuffer presentado mediante raylib.
 - AABB por cuerpo, chunks locales de 8×8×8 y recorrido DDA.
 - Render paralelo por franjas con la biblioteca estándar.
 - Luz directa del Sol, ambiente tenue, sombras y halo solar.
