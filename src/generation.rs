@@ -43,7 +43,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             &[material_id::SUN],
             11,
         )
-        .animated(None, 0.10),
+        .animated(None, 0.06),
         body_at_angle(
             "Mercurio",
             "Planeta rocoso",
@@ -51,7 +51,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             BodyScale::new(1.35, 5.0),
             material_id::MERCURY,
             21,
-            0.18,
+            0.045,
         ),
         body_at_angle(
             "Venus",
@@ -60,7 +60,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             BodyScale::new(1.9, 6.0),
             material_id::VENUS,
             22,
-            -0.08,
+            -0.025,
         ),
         body(
             "Tierra",
@@ -71,7 +71,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             &[material_id::EARTH_OCEAN, material_id::EARTH_LAND],
             23,
         )
-        .animated(Some(Orbit::new(18.0, 4.4, 0.065)), 0.20),
+        .animated(Some(Orbit::new(18.0, 4.4, 0.065)), 0.16),
         body_at_angle(
             "Marte",
             "Planeta rocoso",
@@ -79,7 +79,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             BodyScale::new(1.65, 5.5),
             material_id::MARS,
             24,
-            0.18,
+            0.15,
         ),
         body_at_angle(
             "Júpiter",
@@ -98,7 +98,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             BodyScale::new(3.0, 8.0),
             material_id::URANUS,
             27,
-            -0.16,
+            -0.20,
         ),
         body_at_angle(
             "Neptuno",
@@ -107,7 +107,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
             BodyScale::new(2.85, 8.0),
             material_id::NEPTUNE,
             28,
-            0.15,
+            0.21,
         ),
     ]
 }
@@ -215,7 +215,7 @@ fn saturn() -> CelestialBody {
         material_id::SATURN,
         voxels,
     )
-    .animated(Some(Orbit::new(34.0, 2.35, 0.024)), 0.24)
+    .animated(Some(Orbit::new(34.0, 2.35, 0.024)), 0.25)
 }
 
 fn orbital_position(radius: f32, angle: f32) -> Vec3 {
