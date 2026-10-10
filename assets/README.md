@@ -19,11 +19,12 @@ dentro del proyecto y para uso comercial, sin exigir atribución.
 | Rocks025 | Albedo, NormalGL, Roughness | Mercurio, Saturno y anillos | [ambientCG Rocks025](https://ambientcg.com/a/Rocks025) |
 
 Cada cara visible usa coordenadas UV locales al cubo: no se proyecta una sola
-imagen sobre el planeta completo. La elección entre los recursos asignados y
-la orientación en múltiplos de 90 grados se derivan de la posición del voxel,
-por lo que son estables durante la rotación. El patrón planetario aporta el
-tinte y las formas de escala grande; los mapas PBR aportan el detalle de cada
-cubo.
+imagen sobre el planeta completo. La posición del voxel determina de forma
+estable qué recurso recibe, su orientación, escala, recorte y variación de
+luminosidad. El patrón planetario se evalúa en el centro del voxel para obtener
+un único tinte por cubo; los mapas PBR aportan el detalle dentro de cada cara.
+Una separación tonal estrecha en los bordes evita que dos caras coplanares se
+lean como una superficie continua.
 
 Para reducir aliasing y presión de caché durante el raytracing, los PNG se
 decodifican una sola vez en CPU y se filtran a `64×64` para el muestreo. Las

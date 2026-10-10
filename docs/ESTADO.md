@@ -26,8 +26,9 @@ Está implementado:
 - Modo reproducible de medición con `--benchmark`.
 - Texturas CC0 de ambientCG optimizadas y documentadas, con albedo, normal GL,
   roughness y metalness cuando está disponible.
-- Mapeo independiente por cubo y por cara, con variación determinista entre
-  varios materiales dentro de cada planeta.
+- Mapeo independiente por cubo y por cara, con recorte, orientación, tinte y
+  variación deterministas entre varios materiales dentro de cada planeta; no
+  existe una envoltura de textura continua sobre el cuerpo completo.
 
 ## Próximas iteraciones
 
