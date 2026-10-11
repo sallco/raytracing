@@ -19,6 +19,7 @@ const WIDTH: i32 = 1024;
 const HEIGHT: i32 = 576;
 
 fn main() {
+    material::initialize_color_lut();
     sky::initialize();
     if std::env::args().any(|argument| argument == "--benchmark") {
         benchmark();

@@ -1,6 +1,21 @@
-use std::ops::{Add, AddAssign, Mul};
+use std::{
+    ops::{Add, AddAssign, Mul},
+    sync::OnceLock,
+};
 
 use crate::{math::Vec3, texture::Texture};
+
+const GAMMA_LEVELS: usize = 4096;
+static GAMMA_LUT: OnceLock<[u8; GAMMA_LEVELS]> = OnceLock::new();
+
+pub(crate) fn initialize_color_lut() {
+    GAMMA_LUT.get_or_init(|| {
+        std::array::from_fn(|index| {
+            let linear = index as f32 / (GAMMA_LEVELS - 1) as f32;
+            (linear.powf(1.0 / 2.2) * 255.0) as u8
+        })
+    });
+}
 
 #[derive(Clone, Copy, Debug, Default)]
 pub(crate) struct Rgb {
@@ -31,12 +46,17 @@ impl Rgb {
             self.g / (1.0 + self.g),
             self.b / (1.0 + self.b),
         );
-        [
-            (mapped.r.clamp(0.0, 1.0).powf(1.0 / 2.2) * 255.0) as u8,
-            (mapped.g.clamp(0.0, 1.0).powf(1.0 / 2.2) * 255.0) as u8,
-            (mapped.b.clamp(0.0, 1.0).powf(1.0 / 2.2) * 255.0) as u8,
-            255,
-        ]
+        let gamma = GAMMA_LUT.get_or_init(|| {
+            std::array::from_fn(|index| {
+                let linear = index as f32 / (GAMMA_LEVELS - 1) as f32;
+                (linear.powf(1.0 / 2.2) * 255.0) as u8
+            })
+        });
+        let encode = |channel: f32| {
+            let index = (channel.clamp(0.0, 1.0) * (GAMMA_LEVELS - 1) as f32) as usize;
+            gamma[index]
+        };
+        [encode(mapped.r), encode(mapped.g), encode(mapped.b), 255]
     }
 }
 
