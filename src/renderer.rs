@@ -8,6 +8,7 @@ use crate::{
 
 const SURFACE_BIAS: f32 = 0.003;
 const MAX_SECONDARY_BOUNCES: u8 = 2;
+const MIN_SECONDARY_CONTRIBUTION: f32 = 0.08;
 
 pub(crate) fn render_into(
     scene: &Scene,
@@ -32,8 +33,13 @@ pub(crate) fn render_into(
                 for (local_y, row) in stripe.chunks_mut(width * 4).enumerate() {
                     let y = start_y + local_y;
                     for x in 0..width {
-                        let color =
-                            trace(scene, camera.ray(x, y, width, height), 0, preferred_body);
+                        let color = trace(
+                            scene,
+                            camera.ray(x, y, width, height),
+                            0,
+                            preferred_body,
+                            1.0,
+                        );
                         let offset = x * 4;
                         row[offset..offset + 4].copy_from_slice(&color.to_rgba8());
                     }
@@ -43,12 +49,18 @@ pub(crate) fn render_into(
     });
 }
 
-fn trace(scene: &Scene, ray: Ray, depth: u8, preferred_body: Option<usize>) -> Rgb {
+fn trace(
+    scene: &Scene,
+    ray: Ray,
+    depth: u8,
+    preferred_body: Option<usize>,
+    throughput: f32,
+) -> Rgb {
     scene
         .intersect(ray, f32::INFINITY, preferred_body)
         .map_or_else(
             || background(scene, ray),
-            |hit| shade(scene, ray, hit, depth, preferred_body),
+            |hit| shade(scene, ray, hit, depth, preferred_body, throughput),
         )
 }
 
@@ -98,7 +110,14 @@ fn visible_orbits(scene: &Scene, ray: Ray) -> Rgb {
     Rgb::new(0.09, 0.19, 0.34) * strength
 }
 
-fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8, preferred_body: Option<usize>) -> Rgb {
+fn shade(
+    scene: &Scene,
+    ray: Ray,
+    hit: Hit,
+    depth: u8,
+    preferred_body: Option<usize>,
+    throughput: f32,
+) -> Rgb {
     let material = &scene.materials[hit.material];
     let surface = material.sample_surface(hit.texture_uv, hit.texture_variant);
     let albedo = surface.albedo;
@@ -127,6 +146,7 @@ fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8, preferred_body: Option<us
                 hit,
                 depth,
                 preferred_body,
+                throughput,
                 shading_normal,
                 material,
                 color,
@@ -150,6 +170,7 @@ fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8, preferred_body: Option<us
         hit,
         depth,
         preferred_body,
+        throughput,
         shading_normal,
         material,
         color,
@@ -163,28 +184,33 @@ fn apply_secondary_rays(
     hit: Hit,
     depth: u8,
     preferred_body: Option<usize>,
+    throughput: f32,
     shading_normal: crate::math::Vec3,
     material: &crate::material::Material,
     mut color: Rgb,
 ) -> Rgb {
     if material.reflectivity > 0.0 && depth < MAX_SECONDARY_BOUNCES {
-        let reflected_direction = ray.direction.reflect(shading_normal).normalized();
-        let reflected = trace(
-            scene,
-            Ray {
-                origin: hit.point + hit.normal * SURFACE_BIAS,
-                direction: reflected_direction,
-            },
-            depth + 1,
-            preferred_body,
-        );
         let grazing = (1.0 - (-ray.direction).dot(hit.normal).max(0.0)).powi(5);
         let strength = material.reflectivity + (1.0 - material.reflectivity) * grazing;
-        color = color.mix(reflected, strength.clamp(0.0, 0.96));
+        if throughput * strength >= MIN_SECONDARY_CONTRIBUTION {
+            let reflected_direction = ray.direction.reflect(shading_normal).normalized();
+            let reflected = trace(
+                scene,
+                Ray {
+                    origin: hit.point + hit.normal * SURFACE_BIAS,
+                    direction: reflected_direction,
+                },
+                depth + 1,
+                preferred_body,
+                throughput * strength,
+            );
+            color = color.mix(reflected, strength.clamp(0.0, 0.96));
+        }
     }
 
     if material.transparency > 0.0
         && depth < MAX_SECONDARY_BOUNCES
+        && throughput * material.transparency >= MIN_SECONDARY_CONTRIBUTION
         && let Some((direction, outward_normal)) =
             refract(ray.direction, hit.normal, material.refractive_index)
     {
@@ -196,6 +222,7 @@ fn apply_secondary_rays(
             },
             depth + 1,
             preferred_body,
+            throughput * material.transparency,
         );
         color = color.mix(transmitted, material.transparency);
     }
