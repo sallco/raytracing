@@ -282,10 +282,72 @@ impl Scene {
     }
 
     pub(crate) fn occluded(&self, ray: Ray, maximum: f32) -> bool {
-        self.intersect(ray, maximum).is_some_and(|hit| {
-            let emission = self.materials[hit.material].emission;
-            emission.r <= f32::EPSILON && emission.g <= f32::EPSILON && emission.b <= f32::EPSILON
-        })
+        self.bodies
+            .iter()
+            .any(|body| self.body_occludes(body, ray, maximum))
+    }
+
+    fn body_occludes(&self, body: &CelestialBody, ray: Ray, maximum: f32) -> bool {
+        let local_ray = Ray {
+            origin: (ray.origin - body.center).rotate_y(-body.rotation),
+            direction: ray.direction.rotate_y(-body.rotation),
+        };
+        let Some((entry, exit)) = body.bounds.intersect(local_ray, maximum) else {
+            return false;
+        };
+
+        let cell_extent = body.voxel_scale;
+        let mut voxel_position =
+            GridPosition::from_point(local_ray.at(entry + 0.0001), cell_extent);
+        let mut next_crossing = [0.0; 3];
+        let mut crossing_delta = [0.0; 3];
+        let mut steps = [0; 3];
+        for axis in 0..3 {
+            let direction = local_ray.direction.component(axis);
+            if direction.abs() < f32::EPSILON {
+                next_crossing[axis] = f32::INFINITY;
+                crossing_delta[axis] = f32::INFINITY;
+                continue;
+            }
+            steps[axis] = if direction > 0.0 { 1 } else { -1 };
+            let cell = match axis {
+                0 => voxel_position.x,
+                1 => voxel_position.y,
+                2 => voxel_position.z,
+                _ => unreachable!(),
+            };
+            let boundary_cell = if steps[axis] > 0 { cell + 1 } else { cell };
+            let boundary = boundary_cell as f32 * cell_extent;
+            next_crossing[axis] = (boundary - local_ray.origin.component(axis)) / direction;
+            crossing_delta[axis] = cell_extent / direction.abs();
+        }
+
+        let mut traversal_distance = entry;
+        while traversal_distance <= exit && traversal_distance <= maximum {
+            if let Some(voxel_index) = body.voxel_index_at(voxel_position) {
+                let material = &self.materials[body.voxels[voxel_index].material];
+                let emission = material.emission;
+                let emissive = emission.r > f32::EPSILON
+                    || emission.g > f32::EPSILON
+                    || emission.b > f32::EPSILON;
+                if !emissive && material.transparency < 0.5 {
+                    return true;
+                }
+            }
+
+            let axis =
+                if next_crossing[0] <= next_crossing[1] && next_crossing[0] <= next_crossing[2] {
+                    0
+                } else if next_crossing[1] <= next_crossing[2] {
+                    1
+                } else {
+                    2
+                };
+            traversal_distance = next_crossing[axis];
+            next_crossing[axis] += crossing_delta[axis];
+            voxel_position = voxel_position.stepped(axis, steps[axis]);
+        }
+        false
     }
 }
 
