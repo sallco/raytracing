@@ -18,11 +18,11 @@ dentro del proyecto y para uso comercial, sin exigir atribución.
 | Metal040 | Albedo, NormalGL, Roughness, Metalness | Urano y Neptuno | [ambientCG Metal040](https://ambientcg.com/a/Metal040) |
 | Metal041B | Albedo, NormalGL, Roughness, Metalness | Marte | [ambientCG Metal041B](https://ambientcg.com/a/Metal041B) |
 | Metal041C | Albedo, NormalGL, Roughness, Metalness | Venus y Marte | [ambientCG Metal041C](https://ambientcg.com/a/Metal041C) |
-| Metal046B | Albedo, NormalGL, Roughness, Metalness | Urano y Neptuno | [ambientCG Metal046B](https://ambientcg.com/a/Metal046B) |
+| Metal046B | Albedo, NormalGL, Roughness, Metalness | Urano, Neptuno, paneles y propulsores de iones | [ambientCG Metal046B](https://ambientcg.com/a/Metal046B) |
 | Metal053C | Albedo, NormalGL, Roughness, Metalness | Marte | [ambientCG Metal053C](https://ambientcg.com/a/Metal053C) |
 | Metal056C | Albedo, NormalGL, Roughness, Metalness | Venus y Marte | [ambientCG Metal056C](https://ambientcg.com/a/Metal056C) |
-| Metal061B | Albedo, NormalGL, Roughness, Metalness | Urano y Neptuno | [ambientCG Metal061B](https://ambientcg.com/a/Metal061B) |
-| Rock029 | Albedo, NormalGL, Roughness | Marte | [ambientCG Rock029](https://ambientcg.com/a/Rock029) |
+| Metal061B | Albedo, NormalGL, Roughness, Metalness | Océanos, Urano, Neptuno, paneles y cristal de cabina | [ambientCG Metal061B](https://ambientcg.com/a/Metal061B) |
+| Rock029 | Albedo, NormalGL, Roughness | Marte y basalto del terreno procedural | [ambientCG Rock029](https://ambientcg.com/a/Rock029) |
 | Rocks011 | Albedo, NormalGL, Roughness | Mercurio y anillos | [ambientCG Rocks011](https://ambientcg.com/a/Rocks011) |
 | Rocks012 | Albedo, NormalGL, Roughness | Júpiter y anillos | [ambientCG Rocks012](https://ambientcg.com/a/Rocks012) |
 | Rocks014 | Albedo, NormalGL, Roughness | Mercurio, Saturno, anillos, Urano y Neptuno | [ambientCG Rocks014](https://ambientcg.com/a/Rocks014) |
