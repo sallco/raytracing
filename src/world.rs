@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 use crate::{geometry::Aabb, math::Vec3};
 
@@ -73,7 +73,7 @@ impl Orbit {
     }
 }
 
-#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub(crate) struct GridPosition {
     pub(crate) x: i32,
     pub(crate) y: i32,
@@ -147,7 +147,7 @@ pub(crate) struct CelestialBody {
     pub(crate) predominant_material: usize,
     pub(crate) bounds: Aabb,
     pub(crate) voxels: Vec<Voxel>,
-    pub(crate) chunks: BTreeMap<GridPosition, Chunk>,
+    pub(crate) chunks: HashMap<GridPosition, Chunk>,
 }
 
 impl CelestialBody {
@@ -160,7 +160,7 @@ impl CelestialBody {
         predominant_material: usize,
         voxels: Vec<Voxel>,
     ) -> Self {
-        let mut grouped = BTreeMap::<GridPosition, Vec<usize>>::new();
+        let mut grouped = HashMap::<GridPosition, Vec<usize>>::new();
         let mut minimum = Vec3::new(f32::INFINITY, f32::INFINITY, f32::INFINITY);
         let mut maximum = Vec3::new(f32::NEG_INFINITY, f32::NEG_INFINITY, f32::NEG_INFINITY);
 
