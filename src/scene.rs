@@ -52,7 +52,12 @@ impl Scene {
                 ),
             ),
             Material::matte("Océano terrestre", Rgb::new(0.025, 0.16, 0.68), 0.2)
-                .reflective(0.0, 0.14),
+                .specular(0.72)
+                .reflective(0.0, 0.14)
+                .textured(Texture::planet(
+                    PlanetTexture::EarthOcean,
+                    &[SurfaceTexture::Metal061B],
+                )),
             Material::matte("Continente terrestre", Rgb::new(0.12, 0.48, 0.16), 0.78).textured(
                 Texture::planet(PlanetTexture::EarthLand, &[SurfaceTexture::Grass005]),
             ),
