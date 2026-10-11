@@ -11,6 +11,7 @@ pub(crate) enum PlanetTexture {
     Sun,
     Mercury,
     Venus,
+    EarthOcean,
     EarthLand,
     Mars,
     Jupiter,
@@ -21,6 +22,8 @@ pub(crate) enum PlanetTexture {
     Station,
     SolarArray,
     Spacecraft,
+    Glass,
+    IonEngine,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -263,6 +266,7 @@ fn planet_tint(kind: PlanetTexture) -> Rgb {
         PlanetTexture::Sun => Rgb::new(1.0, 0.62, 0.12),
         PlanetTexture::Mercury => Rgb::new(0.46, 0.43, 0.40),
         PlanetTexture::Venus => Rgb::new(0.92, 0.63, 0.26),
+        PlanetTexture::EarthOcean => Rgb::new(0.03, 0.22, 0.92),
         PlanetTexture::EarthLand => Rgb::new(0.18, 0.58, 0.20),
         PlanetTexture::Mars => Rgb::new(0.78, 0.24, 0.08),
         PlanetTexture::Jupiter => Rgb::new(0.82, 0.58, 0.38),
@@ -273,6 +277,8 @@ fn planet_tint(kind: PlanetTexture) -> Rgb {
         PlanetTexture::Station => Rgb::new(0.88, 0.92, 0.98),
         PlanetTexture::SolarArray => Rgb::new(0.10, 0.28, 0.85),
         PlanetTexture::Spacecraft => Rgb::new(0.55, 0.60, 0.68),
+        PlanetTexture::Glass => Rgb::new(0.18, 0.72, 0.92),
+        PlanetTexture::IonEngine => Rgb::new(0.12, 0.72, 1.0),
     }
 }
 
@@ -281,6 +287,7 @@ fn planet_tint_strength(kind: PlanetTexture) -> f32 {
         PlanetTexture::Sun => 0.12,
         PlanetTexture::Mercury => 0.08,
         PlanetTexture::Venus => 0.15,
+        PlanetTexture::EarthOcean => 0.62,
         PlanetTexture::EarthLand => 0.10,
         PlanetTexture::Mars => 0.12,
         PlanetTexture::Jupiter => 0.15,
@@ -291,5 +298,7 @@ fn planet_tint_strength(kind: PlanetTexture) -> f32 {
         PlanetTexture::Station => 0.06,
         PlanetTexture::SolarArray => 0.40,
         PlanetTexture::Spacecraft => 0.10,
+        PlanetTexture::Glass => 0.55,
+        PlanetTexture::IonEngine => 0.55,
     }
 }
