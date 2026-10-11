@@ -1,5 +1,7 @@
 use std::sync::OnceLock;
 
+use raylib::prelude::*;
+
 use crate::{material::Rgb, math::Vec3};
 
 const SURFACE_MAP_SIZE: u32 = 64;
@@ -67,46 +69,31 @@ impl SurfaceMap {
         roughness_bytes: &[u8],
         metalness_bytes: Option<&[u8]>,
     ) -> Self {
-        let image = image::load_from_memory_with_format(albedo_bytes, image::ImageFormat::Png)
-            .expect("las texturas PNG embebidas deben ser válidas")
-            .resize_exact(
-                SURFACE_MAP_SIZE,
-                SURFACE_MAP_SIZE,
-                image::imageops::FilterType::Triangle,
-            )
-            .to_rgb8();
-        let (width, height) = image.dimensions();
-        let albedo: Vec<_> = image
-            .pixels()
-            .map(|pixel| {
-                Rgb::new(
-                    pixel[0] as f32 / 255.0,
-                    pixel[1] as f32 / 255.0,
-                    pixel[2] as f32 / 255.0,
-                )
-            })
+        let albedo_image = decode_image(albedo_bytes, "albedo");
+        let width = albedo_image.width();
+        let height = albedo_image.height();
+        let albedo: Vec<_> = albedo_image
+            .get_image_data()
+            .iter()
+            .map(|pixel| rgb_from_color(*pixel))
             .collect();
-        let normal_image =
-            image::load_from_memory_with_format(normal_bytes, image::ImageFormat::Png)
-                .expect("los mapas normales PNG embebidos deben ser válidos")
-                .resize_exact(
-                    SURFACE_MAP_SIZE,
-                    SURFACE_MAP_SIZE,
-                    image::imageops::FilterType::Triangle,
-                )
-                .to_rgb8();
+        let normal_image = decode_image(normal_bytes, "normales");
         let normals = normal_image
-            .pixels()
+            .get_image_data()
+            .iter()
             .map(|pixel| {
-                let x = pixel[0] as f32 / 127.5 - 1.0;
-                let y = pixel[1] as f32 / 127.5 - 1.0;
-                let z = pixel[2] as f32 / 127.5 - 1.0;
+                let x = pixel.r as f32 / 127.5 - 1.0;
+                let y = pixel.g as f32 / 127.5 - 1.0;
+                let z = pixel.b as f32 / 127.5 - 1.0;
                 Vec3::new(x * 0.42, y * 0.42, z.max(0.05)).normalized()
             })
             .collect();
         let roughness = decode_scalar(roughness_bytes);
         let metalness = metalness_bytes.map_or_else(|| vec![0.0; albedo.len()], decode_scalar);
-        debug_assert_eq!(normal_image.dimensions(), (width, height));
+        debug_assert_eq!(
+            (normal_image.width(), normal_image.height()),
+            (width, height)
+        );
         debug_assert_eq!(roughness.len(), albedo.len());
         debug_assert_eq!(metalness.len(), albedo.len());
         Self {
@@ -133,17 +120,28 @@ impl SurfaceMap {
 }
 
 fn decode_scalar(bytes: &[u8]) -> Vec<f32> {
-    image::load_from_memory_with_format(bytes, image::ImageFormat::Png)
-        .expect("los mapas escalares PNG embebidos deben ser válidos")
-        .resize_exact(
-            SURFACE_MAP_SIZE,
-            SURFACE_MAP_SIZE,
-            image::imageops::FilterType::Triangle,
-        )
-        .to_luma8()
-        .pixels()
-        .map(|pixel| pixel[0] as f32 / 255.0)
+    decode_image(bytes, "escalares")
+        .get_image_data()
+        .iter()
+        .map(|pixel| {
+            (pixel.r as f32 * 0.2126 + pixel.g as f32 * 0.7152 + pixel.b as f32 * 0.0722) / 255.0
+        })
         .collect()
+}
+
+fn decode_image(bytes: &[u8], channel: &str) -> Image {
+    let mut image = Image::load_image_from_mem(".png", bytes)
+        .unwrap_or_else(|error| panic!("el mapa de {channel} PNG debe ser válido: {error}"));
+    image.resize(SURFACE_MAP_SIZE as i32, SURFACE_MAP_SIZE as i32);
+    image
+}
+
+fn rgb_from_color(color: Color) -> Rgb {
+    Rgb::new(
+        color.r as f32 / 255.0,
+        color.g as f32 / 255.0,
+        color.b as f32 / 255.0,
+    )
 }
 
 impl SurfaceTexture {
