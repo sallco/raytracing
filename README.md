@@ -1,5 +1,11 @@
 # Raytracing
 
+
+
+https://github.com/user-attachments/assets/06b487fe-db9c-4577-bfcd-6c6450fb0bb2
+
+
+
 Diorama 3D renderizado mediante raytracing por CPU para el curso de Gráficas.
 La escena presenta un sistema solar animado formado por más de 7000 cubos.
 `raylib` se limita a ventana, entrada, texto, decodificación de PNG y presentación
