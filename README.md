@@ -1,108 +1,190 @@
-# Raytracing
+# Diorama solar voxelizado
 
+Raytracer interactivo escrito en Rust que representa un sistema solar animado
+mediante cubos texturizados. La CPU genera cada píxel de la escena: cámara,
+intersecciones, iluminación, sombras, mapas normales, reflexión, refracción y
+skybox. `raylib` se limita a crear la ventana, leer controles, decodificar PNG,
+dibujar texto y presentar el framebuffer terminado.
 
+El proyecto fue desarrollado para poner en práctica los fundamentos de
+raytracing sin usar shaders, APIs de trazado por hardware ni librerías que
+resuelvan los algoritmos de renderizado.
+
+## Video de demostración
+
+**Recorrido interactivo del diorama solar — 1 min 31 s**
 
 https://github.com/user-attachments/assets/06b487fe-db9c-4577-bfcd-6c6450fb0bb2
 
+El video muestra la vista general, las órbitas animadas, la cámara orbital, el
+zoom libre, la selección de cuerpos, el texturizado individual de los cubos y
+las métricas de rendimiento en tiempo real.
 
+## Resultado
 
-Diorama 3D renderizado mediante raytracing por CPU para el curso de Gráficas.
-La escena presenta un sistema solar animado formado por más de 7000 cubos.
-`raylib` se limita a ventana, entrada, texto, decodificación de PNG y presentación
-del framebuffer; la cámara, intersecciones, iluminación y efectos se calculan en
-CPU, sin shaders ni aceleración de la tarjeta de video.
+| Característica | Implementación |
+| --- | --- |
+| Escena | Sol, ocho planetas, anillos de Saturno, estación, satélite y nave |
+| Geometría | 12 elementos seleccionables y 7089 cubos visibles |
+| Terreno procedural | Marte craterizado sobre un dominio de `20 × 20` |
+| Materiales | 16 configuraciones con texturas y parámetros ópticos propios |
+| Recursos | 17 familias CC0, 59 PNG optimizados de `256 × 256` |
+| Iluminación | Sol emisivo, luz puntual cálida, ambiente tenue y sombras |
+| Efectos | Normal mapping, reflexión, refracción, Fresnel y halo solar |
+| Entorno | Skybox procedural de seis caras con estrellas y nebulosa |
+| Animación | Órbitas jerarquizadas y rotación axial a 30 Hz |
+| Salida | Ventana `1280 × 720`, raytracing interno `768 × 432` |
+| Paralelismo | Franjas independientes con `std::thread::scope`, hasta 12 hilos |
 
-Incluye el Sol, los ocho planetas, anillos de Saturno, una estación, un satélite,
-una nave y Marte con terreno craterizado procedural de `20×20`. También incorpora
-trayectorias orbitales visibles, traslación y rotación, skybox estelar de seis
-caras, halo solar, luz directa, ambiente tenue, sombras, reflexión y refracción
-con un máximo de dos rebotes secundarios. Cada cubo visible tiene UV locales y
-una textura PBR elegida de forma determinista entre los materiales asignados.
-
-## Video
-
-El video de entrega debe insertarse aquí después de grabar la ejecución en modo
-`--release` y subir el archivo a GitHub. Este paso requiere una URL pública del
-video y no puede completarse únicamente desde el código fuente.
-
-## Entorno
-
-- Rust 1.98 o posterior
-- Arch Linux / EndeavourOS
-- `raylib` 5.5.1
-
-## Ejecutar
-
-```bash
-cargo run
-```
-
-Para las capturas y el video final, usar el perfil optimizado:
-
-```bash
-cargo run --release
-```
+Las escalas y velocidades están comprimidas para que la escena completa sea
+legible y el movimiento resulte visible. Se conserva una relación cualitativa:
+los planetas interiores orbitan más rápido que los exteriores y los gigantes
+gaseosos tienen una rotación relativamente rápida.
 
 ## Controles
 
-- Arrastrar con el botón izquierdo: orbitar la cámara.
-- Rueda del ratón: acercar o alejar.
-- Flechas izquierda y derecha: seleccionar el elemento anterior o siguiente.
-- `Esc`: regresar a la vista general.
+| Acción | Control |
+| --- | --- |
+| Orbitar la cámara | Arrastrar con el botón izquierdo |
+| Acercar o alejar | Rueda del ratón |
+| Elemento anterior o siguiente | Flechas izquierda y derecha |
+| Volver suavemente a la vista general | `Esc` |
 
-El HUD muestra los FPS, el tiempo del último raytrace y, al enfocar un elemento,
-su nombre, tipo, cantidad de cubos y material predominante.
+Al seleccionar un elemento, la cámara hace una transición suave hacia una
+distancia inicial apropiada. Esa distancia no bloquea el zoom: la rueda puede
+seguir acercando o alejando la vista. El HUD muestra FPS, tiempo del último
+raytrace, nombre, tipo, cantidad de cubos y material predominante.
 
-## Medir rendimiento
+## Elementos y cantidad de cubos
 
-El modo de medición genera el framebuffer CPU de `768×432` sin abrir una ventana:
+| Elemento | Tipo | Cubos | Material predominante |
+| --- | --- | ---: | --- |
+| Sol | Estrella | 1416 | Plasma solar |
+| Mercurio | Planeta rocoso | 240 | Regolito mercuriano |
+| Venus | Planeta rocoso | 336 | Nubes de Venus |
+| Tierra | Planeta oceánico | 456 | Océano terrestre |
+| Estación Orbital | Estación espacial | 118 | Casco de aleación |
+| Ik'sat | Satélite artificial | 64 | Casco de aleación |
+| Marte | Planeta procedural | 888 | Suelo marciano |
+| Nave Exploradora | Nave espacial | 72 | Blindaje compuesto |
+| Júpiter | Gigante gaseoso | 968 | Atmósfera de Júpiter |
+| Saturno y sus anillos | Gigante con anillos | 1267 | Atmósfera de Saturno |
+| Urano | Gigante helado | 632 | Hielo de Urano |
+| Neptuno | Gigante helado | 632 | Hielo de Neptuno |
+| **Total** |  | **7089** |  |
+
+La estación e Ik'sat orbitan la Tierra en planos inclinados; la nave posee una
+órbita heliocéntrica independiente. Saturno integra el planeta y sus anillos en
+un solo cuerpo seleccionable.
+
+## Materiales y texturas
+
+Cada cubo visible tiene sus propias UV por cara. Un hash derivado de su posición
+selecciona de manera determinista la familia, el recorte, la escala y la
+variación tonal de la textura. Por tanto, los planetas no están recubiertos por
+una única imagen continua: cubos vecinos pueden presentar detalles distintos
+sin perder la identidad visual del cuerpo.
+
+Los 16 materiales incluyen plasma solar, regolitos, nubes, océano, continente,
+suelo marciano, atmósferas gaseosas, hielos, aleaciones, paneles fotovoltaicos,
+blindaje, propulsores y cristal. Todos definen albedo, rugosidad, brillo
+especular, metalicidad, reflectividad y transparencia; los materiales que lo
+requieren añaden emisión o índice de refracción.
+
+- El océano, los metales, los paneles y el cristal producen reflexión.
+- El hielo de Saturno usa IOR 1.31 y la cabina de la nave IOR 1.52.
+- El Sol y los propulsores de iones son emisivos.
+- Los mapas `NormalGL` alteran la iluminación en el espacio tangente de la cara.
+- Albedo, normal, roughness y metalness proceden estrictamente de los PNG
+  versionados en el proyecto.
+
+El inventario completo de archivos, asignaciones, optimización, procedencia y
+licencia está en [assets/README.md](assets/README.md). Todas las fuentes son de
+[ambientCG](https://ambientcg.com/) y se distribuyen bajo
+[CC0 1.0 Universal](https://docs.ambientcg.com/license/).
+
+## Generación procedural
+
+Marte se construye al iniciar el programa sin cargar un modelo. Una esfera de
+radio 9.5 celdas recibe relieve mediante hash espacial y cuatro depresiones
+craterizadas. Después se inspeccionan los seis vecinos de cada celda y solo se
+almacena la superficie expuesta. El resultado tiene 888 cubos y cubre un área de
+`20 × 20`, por encima del mínimo de `16 × 16` solicitado.
+
+La generación es determinista: una misma versión del programa produce siempre
+la misma geometría. Una prueba automatizada verifica el tamaño mínimo del
+terreno.
+
+## Arquitectura del raytracer
+
+```text
+Cámara → rayo primario → AABB del cuerpo → DDA por celdas → impacto del cubo
+       → textura PBR → iluminación/sombra → reflexión o refracción → RGBA8
+       └──────────────────── sin impacto → skybox + órbitas + halo solar
+```
+
+Los cuerpos permanecen en coordenadas locales. Para animarlos se actualiza su
+transformación y se lleva el rayo al espacio local, evitando mover miles de
+cubos. Cada cuerpo tiene una AABB; dentro de ella, un DDA recorre únicamente las
+celdas atravesadas y consulta ocupación en chunks de `8 × 8 × 8`.
+
+El framebuffer se divide en franjas horizontales no solapadas. Hasta 12 hilos de
+la biblioteca estándar escriben directamente en su región, sin `Mutex`. La
+reflexión y la refracción se limitan a dos rebotes y se podan cuando su aporte
+acumulado es imperceptible.
+
+La explicación completa del pipeline, las velocidades, las decisiones de
+memoria y todas las optimizaciones está en
+[docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
+
+## Rendimiento
+
+En la medición de referencia del equipo de desarrollo, la vista general tardó
+13.8 ms por raytrace (72.45 FPS equivalentes). Saturno fue la vista más costosa
+con 27.0 ms (37.08 FPS equivalentes), por encima del objetivo de 30 FPS. Estos
+valores dependen del procesador, el número de hilos y la carga del sistema.
+
+Las principales optimizaciones son:
+
+- almacenamiento exclusivo de voxeles superficiales;
+- descarte temprano mediante AABB por cuerpo;
+- chunks `8³` y recorrido DDA con acceso directo a celdas;
+- cuerpo enfocado evaluado primero y retorno temprano en su impacto;
+- sombras `any-hit` y omisión de rayos sin aporte luminoso;
+- poda de rayos secundarios por profundidad y contribución;
+- texturas, skybox y tabla gamma inicializados una sola vez;
+- reutilización del framebuffer y renderizado solo cuando cambia la escena;
+- resolución interna desacoplada del HUD y la ventana.
+
+Para repetir la medición sin abrir una ventana:
 
 ```bash
 cargo run --release -- --benchmark
 ```
 
-La simulación usa tiempo real y actualiza la animación a 30 pasos por segundo.
-Entre actualizaciones se reutiliza el último framebuffer para conservar la
-respuesta del HUD y los controles. La imagen CPU se escala a la ventana de
-`1280×720`; el HUD se dibuja después a resolución nativa.
+El reporte imprime la vista, tipo, cubos, material, milisegundos y FPS
+equivalentes de la composición general y de cada elemento.
 
-## Arquitectura
+## Requisitos y ejecución
 
-- Solo se almacenan voxeles expuestos de cada cuerpo.
-- La escala visual está desacoplada de la resolución voxel de cada planeta.
-- Los voxeles se agrupan en chunks locales de `8×8×8`.
-- Cada rayo descarta cuerpos por AABB y recorre sus chunks mediante DDA.
-- El framebuffer se divide en hasta 12 franjas usando `std::thread::scope`.
-- Los cuerpos permanecen en coordenadas locales; cada rayo se transforma para
-  rotarlos sin mover miles de voxeles.
-- El entorno es un skybox cúbico con seis caras generadas una sola vez en CPU y
-  consultadas mediante proyección por eje dominante.
-- Las texturas CC0 se embeben, decodifican una vez en CPU y se muestrean con UV
-  locales por cara; albedo, normal GL y roughness modifican la iluminación. No
-  se generan albedos planetarios procedurales.
+Se requiere una instalación estable de Rust compatible con la edición 2024 y
+las herramientas nativas que necesita `raylib` en el sistema operativo. La
+versión de referencia fue compilada con Rust 1.99.0 y `raylib` 5.5.1.
 
-## Evidencia de la rúbrica
+```bash
+git clone git@github.com:sallco/raytracing.git
+cd raytracing
+cargo run --release
+```
 
-| Criterio | Implementación visible |
-| --- | --- |
-| Complejidad | Sistema solar, anillos, estación, satélite y nave seleccionables. |
-| Paralelismo y optimización | Franjas con `std::thread::scope`, AABB por cuerpo, chunks `8×8×8`, DDA y solo superficies en los cuerpos esféricos. |
-| Rotación y zoom | Rotación propia y orbital; arrastre para orbitar y rueda para acercar o alejar. |
-| Cinco materiales | Continente, regolito, metal, panel solar, hielo y cristal tienen textura y parámetros propios de albedo, especular, transparencia y reflectividad. |
-| Refracción | Cristal de la cabina de la nave (`IOR 1.52`) e hielo de Saturno (`IOR 1.31`). |
-| Reflexión | Océanos, paneles fotovoltaicos, metal y cristal reflejan el entorno. |
-| Mapas normales | Los mapas `NormalGL` alteran la normal de iluminación de cada cara texturizada. |
-| Emisión | El Sol y los propulsores de iones emiten luz visible. |
-| Skybox | Seis caras (`+X`, `-X`, `+Y`, `-Y`, `+Z`, `-Z`) con estrellas y nebulosa. |
-| Terreno procedural | `Marte`, seleccionable desde el HUD, genera una superficie esférica de `20×20` con ruido, relieve y cuatro cráteres. |
+El perfil `release` habilita optimización nivel 3, LTO fino, una sola unidad de
+código y eliminación de símbolos. Es el perfil recomendado para evaluación,
+capturas y video. El perfil de desarrollo conserva optimización nivel 1 para que
+la interacción siga siendo utilizable:
 
-La procedencia, licencia y asignación de los recursos se documentan en
-[`assets/README.md`](assets/README.md).
-
-El perfil de desarrollo usa optimización moderada para conservar una iteración
-fluida. El perfil de lanzamiento habilita optimización máxima y LTO fino para
-priorizar el rendimiento del renderizador. La cifra real depende del procesador
-y se debe registrar con el modo de medición antes de la entrega.
+```bash
+cargo run
+```
 
 ## Verificación
 
@@ -113,3 +195,19 @@ cargo test
 cargo clippy -- -D warnings
 cargo build --release
 ```
+
+## Documentación
+
+| Documento | Contenido |
+| --- | --- |
+| [Arquitectura y rendimiento](docs/ARQUITECTURA.md) | Pipeline, inventario, animación, paralelismo, optimizaciones y benchmark completo |
+| [Correspondencia con la rúbrica](docs/RUBRICA.md) | Evidencia por criterio, parámetros de materiales y lista de entrega |
+| [Texturas y licencias](assets/README.md) | Catálogo de los 59 PNG, asignación, carga, fuente y licencia CC0 |
+
+La evidencia específica para cada apartado de evaluación está organizada en
+[docs/RUBRICA.md](docs/RUBRICA.md).
+
+## Referencias de la guía
+
+- [Ejemplo de diorama](https://www.youtube.com/watch?v=91kxRGeg9wQ)
+- [Dioramas físicos de referencia](https://www.youtube.com/watch?v=WN98_qIKVds)
