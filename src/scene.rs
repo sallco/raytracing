@@ -287,6 +287,9 @@ impl Scene {
                 next_crossing[axis] += crossing_delta[axis];
                 voxel_position = voxel_position.stepped(axis, steps[axis]);
             }
+            if Some(body_index) == preferred && result.is_some() {
+                return result;
+            }
         }
         result
     }
