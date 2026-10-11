@@ -159,19 +159,32 @@ fn main() {
 fn benchmark() {
     let scene = scene::Scene::solar_system();
     let mut pixels = Vec::with_capacity(RENDER_WIDTH as usize * RENDER_HEIGHT as usize * 4);
+    let overview_label = format!(
+        "Vista general | {} elementos | {} cubos",
+        scene.bodies.len(),
+        scene.total_voxels()
+    );
     benchmark_view(
         &scene,
         camera::Camera::overview(),
         None,
-        "Vista general",
+        &overview_label,
         &mut pixels,
     );
     for (index, body) in scene.bodies.iter().enumerate() {
+        let material = &scene.materials[body.predominant_material];
+        let label = format!(
+            "{} | {} | {} cubos | {}",
+            body.name,
+            body.kind,
+            body.voxel_count(),
+            material.name
+        );
         benchmark_view(
             &scene,
             camera::Camera::focused(body.center, body.focus_distance),
             Some(index),
-            body.name,
+            &label,
             &mut pixels,
         );
     }
