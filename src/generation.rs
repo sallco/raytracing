@@ -79,15 +79,7 @@ pub(crate) fn generate_solar_system() -> Vec<CelestialBody> {
         .animated(Some(Orbit::new(18.0, 4.4, 0.065)), 0.16),
         space_station(earth_pos),
         satellite(earth_pos),
-        body_at_angle(
-            "Marte",
-            "Planeta rocoso",
-            Orbit::new(22.0, 5.55, 0.052),
-            BodyScale::new(1.65, 5.5),
-            material_id::MARS,
-            24,
-            0.15,
-        ),
+        mars(),
         spacecraft(),
         body_at_angle(
             "Júpiter",
@@ -488,6 +480,81 @@ fn spacecraft() -> CelestialBody {
     .animated(Some(orbit), 0.18)
 }
 
+fn mars() -> CelestialBody {
+    const RADIUS: f32 = 9.5;
+    const VOXEL_SCALE: f32 = 1.65 / RADIUS;
+    let extent = RADIUS.ceil() as i32;
+    let mut voxels = Vec::new();
+
+    for z in -extent..=extent {
+        for y in -extent..=extent {
+            for x in -extent..=extent {
+                if !mars_occupied(x, y, z, RADIUS) {
+                    continue;
+                }
+                let exposed = [
+                    (1, 0, 0),
+                    (-1, 0, 0),
+                    (0, 1, 0),
+                    (0, -1, 0),
+                    (0, 0, 1),
+                    (0, 0, -1),
+                ]
+                .into_iter()
+                .any(|(dx, dy, dz)| !mars_occupied(x + dx, y + dy, z + dz, RADIUS));
+                if !exposed {
+                    continue;
+                }
+                voxels.push(Voxel {
+                    position: GridPosition::new(x, y, z),
+                    material: material_id::MARS,
+                });
+            }
+        }
+    }
+
+    let orbit = Orbit::new(22.0, 5.55, 0.052);
+    CelestialBody::new(
+        "Marte",
+        "Planeta con terreno procedural 20x20",
+        orbit.position(),
+        9.6,
+        VOXEL_SCALE,
+        material_id::MARS,
+        voxels,
+    )
+    .animated(Some(orbit), 0.15)
+}
+
+fn mars_occupied(x: i32, y: i32, z: i32, radius: f32) -> bool {
+    let point = Vec3::new(x as f32 + 0.5, y as f32 + 0.5, z as f32 + 0.5);
+    let distance = point.length();
+    if distance <= f32::EPSILON {
+        return true;
+    }
+    let direction = point / distance;
+    let grain = hash(x, y, z, 0x4d41_5253) as f32 / u32::MAX as f32 * 0.52 - 0.26;
+    let craters = [
+        (Vec3::new(0.72, 0.42, 0.55).normalized(), 0.90, 1.15),
+        (Vec3::new(-0.58, 0.68, 0.45).normalized(), 0.94, 0.75),
+        (Vec3::new(0.18, -0.45, 0.87).normalized(), 0.92, 0.92),
+        (Vec3::new(-0.78, -0.20, -0.59).normalized(), 0.95, 0.62),
+    ];
+    let depression = craters
+        .into_iter()
+        .map(|(center, edge, depth)| {
+            let alignment = direction.dot(center);
+            if alignment > edge {
+                let normalized = (alignment - edge) / (1.0 - edge);
+                depth * normalized * normalized
+            } else {
+                0.0
+            }
+        })
+        .sum::<f32>();
+    distance <= radius + grain - depression
+}
+
 fn orbital_position(radius: f32, angle: f32) -> Vec3 {
     Vec3::new(angle.cos() * radius, 0.0, angle.sin() * radius)
 }
@@ -500,4 +567,29 @@ fn hash(x: i32, y: i32, z: i32, seed: u32) -> u32 {
     value ^= value >> 16;
     value = value.wrapping_mul(0x7feb_352d);
     value ^ (value >> 15)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeSet;
+
+    use super::*;
+
+    #[test]
+    fn marte_procedural_supera_diecisies_por_diecisies() {
+        let terrain = mars();
+        let columns: BTreeSet<_> = terrain
+            .voxels
+            .iter()
+            .map(|voxel| (voxel.position.x, voxel.position.z))
+            .collect();
+        let width = columns.iter().map(|column| column.0).max().unwrap()
+            - columns.iter().map(|column| column.0).min().unwrap()
+            + 1;
+        let depth = columns.iter().map(|column| column.1).max().unwrap()
+            - columns.iter().map(|column| column.1).min().unwrap()
+            + 1;
+
+        assert!(width >= 16 && depth >= 16);
+    }
 }
