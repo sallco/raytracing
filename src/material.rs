@@ -68,6 +68,7 @@ pub(crate) struct Material {
     pub(crate) albedo: Rgb,
     pub(crate) emission: Rgb,
     pub(crate) roughness: f32,
+    pub(crate) specular: f32,
     pub(crate) metallic: f32,
     pub(crate) reflectivity: f32,
     pub(crate) transparency: f32,
@@ -90,6 +91,7 @@ impl Material {
             albedo,
             emission: Rgb::BLACK,
             roughness,
+            specular: 0.18,
             metallic: 0.0,
             reflectivity: 0.0,
             transparency: 0.0,
@@ -106,6 +108,11 @@ impl Material {
     pub(crate) fn reflective(mut self, metallic: f32, reflectivity: f32) -> Self {
         self.metallic = metallic;
         self.reflectivity = reflectivity;
+        self
+    }
+
+    pub(crate) fn specular(mut self, strength: f32) -> Self {
+        self.specular = strength;
         self
     }
 

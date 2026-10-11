@@ -91,6 +91,7 @@ impl Scene {
                 ),
             ),
             Material::matte("Hielo de los anillos", Rgb::new(0.72, 0.68, 0.57), 0.44)
+                .specular(0.58)
                 .reflective(0.1, 0.15)
                 .transparent(0.08, 1.31)
                 .textured(Texture::planet(
@@ -126,18 +127,21 @@ impl Scene {
                 ),
             ),
             Material::matte("Casco de aleación", Rgb::new(0.82, 0.85, 0.90), 0.38)
+                .specular(0.62)
                 .reflective(0.65, 0.25)
                 .textured(Texture::planet(
                     PlanetTexture::Station,
                     &[SurfaceTexture::Metal040, SurfaceTexture::Metal056C],
                 )),
             Material::matte("Panel fotovoltaico", Rgb::new(0.06, 0.15, 0.42), 0.22)
+                .specular(0.84)
                 .reflective(0.80, 0.45)
                 .textured(Texture::planet(
                     PlanetTexture::SolarArray,
                     &[SurfaceTexture::Metal046B, SurfaceTexture::Metal061B],
                 )),
             Material::matte("Blindaje compuesto", Rgb::new(0.24, 0.26, 0.32), 0.42)
+                .specular(0.48)
                 .reflective(0.50, 0.22)
                 .textured(Texture::planet(
                     PlanetTexture::Spacecraft,

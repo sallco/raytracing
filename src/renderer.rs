@@ -116,7 +116,8 @@ fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
         let shininess = 2.0 + (1.0 - surface.roughness).powi(2) * 126.0;
         let specular = shading_normal.dot(halfway).max(0.0).powf(shininess);
         let specular_color = Rgb::WHITE.mix(albedo, surface.metallic);
-        color += specular_color.modulate(scene.light.color) * (specular * attenuation);
+        color += specular_color.modulate(scene.light.color)
+            * (specular * attenuation * material.specular);
     }
 
     if material.reflectivity > 0.0 && depth < MAX_SECONDARY_BOUNCES {
