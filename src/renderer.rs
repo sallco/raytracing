@@ -107,16 +107,31 @@ fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8, preferred_body: Option<us
         + hit.normal * surface.tangent_normal.z)
         .normalized();
     let mut color = material.emission.modulate(albedo) + albedo * 0.11;
+    let emissive = material.emission.r > f32::EPSILON
+        || material.emission.g > f32::EPSILON
+        || material.emission.b > f32::EPSILON;
     let light_vector = scene.light.position - hit.point;
     let light_distance = light_vector.length();
     let light_direction = light_vector / light_distance;
-    let shadow_ray = Ray {
-        origin: hit.point + hit.normal * SURFACE_BIAS,
-        direction: light_direction,
-    };
+    let diffuse = shading_normal.dot(light_direction).max(0.0);
 
-    if !scene.occluded(shadow_ray, light_distance - SURFACE_BIAS) {
-        let diffuse = shading_normal.dot(light_direction).max(0.0);
+    if !emissive && diffuse > f32::EPSILON {
+        let shadow_ray = Ray {
+            origin: hit.point + hit.normal * SURFACE_BIAS,
+            direction: light_direction,
+        };
+        if scene.occluded(shadow_ray, light_distance - SURFACE_BIAS) {
+            return apply_secondary_rays(
+                scene,
+                ray,
+                hit,
+                depth,
+                preferred_body,
+                shading_normal,
+                material,
+                color,
+            );
+        }
         let attenuation = (scene.light.intensity / (light_distance * light_distance)).min(3.0);
         color += albedo.modulate(scene.light.color) * (diffuse * attenuation);
 
@@ -129,6 +144,29 @@ fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8, preferred_body: Option<us
             * (specular * attenuation * material.specular);
     }
 
+    apply_secondary_rays(
+        scene,
+        ray,
+        hit,
+        depth,
+        preferred_body,
+        shading_normal,
+        material,
+        color,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn apply_secondary_rays(
+    scene: &Scene,
+    ray: Ray,
+    hit: Hit,
+    depth: u8,
+    preferred_body: Option<usize>,
+    shading_normal: crate::math::Vec3,
+    material: &crate::material::Material,
+    mut color: Rgb,
+) -> Rgb {
     if material.reflectivity > 0.0 && depth < MAX_SECONDARY_BOUNCES {
         let reflected_direction = ray.direction.reflect(shading_normal).normalized();
         let reflected = trace(
