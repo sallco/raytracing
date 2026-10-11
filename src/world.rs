@@ -113,6 +113,13 @@ impl GridPosition {
             self.z.div_euclid(CHUNK_SIZE),
         )
     }
+
+    fn chunk_slot(self) -> usize {
+        let x = self.x.rem_euclid(CHUNK_SIZE) as usize;
+        let y = self.y.rem_euclid(CHUNK_SIZE) as usize;
+        let z = self.z.rem_euclid(CHUNK_SIZE) as usize;
+        (z * CHUNK_SIZE as usize + y) * CHUNK_SIZE as usize + x
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -130,8 +137,7 @@ impl Voxel {
 
 #[derive(Clone, Debug)]
 pub(crate) struct Chunk {
-    pub(crate) bounds: Aabb,
-    pub(crate) voxel_indices: Vec<usize>,
+    voxel_indices: [Option<usize>; (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE) as usize],
 }
 
 #[derive(Clone, Debug)]
@@ -160,15 +166,17 @@ impl CelestialBody {
         predominant_material: usize,
         voxels: Vec<Voxel>,
     ) -> Self {
-        let mut grouped = HashMap::<GridPosition, Vec<usize>>::new();
+        let mut chunks = HashMap::<GridPosition, Chunk>::new();
         let mut minimum = Vec3::new(f32::INFINITY, f32::INFINITY, f32::INFINITY);
         let mut maximum = Vec3::new(f32::NEG_INFINITY, f32::NEG_INFINITY, f32::NEG_INFINITY);
 
         for (index, voxel) in voxels.iter().enumerate() {
-            grouped
+            let chunk = chunks
                 .entry(voxel.position.chunk())
-                .or_default()
-                .push(index);
+                .or_insert_with(|| Chunk {
+                    voxel_indices: [None; (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE) as usize],
+                });
+            chunk.voxel_indices[voxel.position.chunk_slot()] = Some(index);
             let position = voxel.position.as_vec3() * voxel_scale;
             minimum.x = minimum.x.min(position.x);
             minimum.y = minimum.y.min(position.y);
@@ -177,24 +185,6 @@ impl CelestialBody {
             maximum.y = maximum.y.max(position.y + voxel_scale);
             maximum.z = maximum.z.max(position.z + voxel_scale);
         }
-
-        let chunks = grouped
-            .into_iter()
-            .map(|(position, voxel_indices)| {
-                let chunk_extent = CHUNK_SIZE as f32 * voxel_scale;
-                let minimum = position.as_vec3() * chunk_extent;
-                (
-                    position,
-                    Chunk {
-                        bounds: Aabb::new(
-                            minimum,
-                            minimum + Vec3::new(chunk_extent, chunk_extent, chunk_extent),
-                        ),
-                        voxel_indices,
-                    },
-                )
-            })
-            .collect();
 
         Self {
             name,
@@ -214,6 +204,12 @@ impl CelestialBody {
 
     pub(crate) fn voxel_count(&self) -> usize {
         self.voxels.len()
+    }
+
+    pub(crate) fn voxel_index_at(&self, position: GridPosition) -> Option<usize> {
+        self.chunks
+            .get(&position.chunk())
+            .and_then(|chunk| chunk.voxel_indices[position.chunk_slot()])
     }
 
     pub(crate) fn animated(mut self, orbit: Option<Orbit>, rotation_speed: f32) -> Self {

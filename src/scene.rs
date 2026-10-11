@@ -5,7 +5,7 @@ use crate::{
     material::{Material, Rgb},
     math::Vec3,
     texture::{PlanetTexture, SurfaceTexture, Texture},
-    world::{CHUNK_SIZE, CelestialBody, GridPosition},
+    world::{CelestialBody, GridPosition},
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -215,8 +215,8 @@ impl Scene {
             };
 
             let start = local_ray.at(entry + 0.0001);
-            let chunk_extent = CHUNK_SIZE as f32 * body.voxel_scale;
-            let mut chunk_position = GridPosition::from_point(start, chunk_extent);
+            let cell_extent = body.voxel_scale;
+            let mut voxel_position = GridPosition::from_point(start, cell_extent);
             let mut next_crossing = [0.0; 3];
             let mut crossing_delta = [0.0; 3];
             let mut steps = [0; 3];
@@ -229,42 +229,39 @@ impl Scene {
                 }
                 steps[axis] = if direction > 0.0 { 1 } else { -1 };
                 let cell = match axis {
-                    0 => chunk_position.x,
-                    1 => chunk_position.y,
-                    2 => chunk_position.z,
+                    0 => voxel_position.x,
+                    1 => voxel_position.y,
+                    2 => voxel_position.z,
                     _ => unreachable!(),
                 };
                 let boundary_cell = if steps[axis] > 0 { cell + 1 } else { cell };
-                let boundary = boundary_cell as f32 * chunk_extent;
+                let boundary = boundary_cell as f32 * cell_extent;
                 next_crossing[axis] = (boundary - local_ray.origin.component(axis)) / direction;
-                crossing_delta[axis] = chunk_extent / direction.abs();
+                crossing_delta[axis] = cell_extent / direction.abs();
             }
 
             let mut traversal_distance = entry;
             while traversal_distance <= exit && traversal_distance <= closest {
-                if let Some(chunk) = body.chunks.get(&chunk_position) {
-                    debug_assert!(chunk.bounds.intersect(local_ray, closest).is_some());
-                    for &voxel_index in &chunk.voxel_indices {
-                        let voxel = body.voxels[voxel_index];
-                        let bounds = voxel.bounds(body.voxel_scale);
-                        let Some((distance, _)) = bounds.intersect(local_ray, closest) else {
-                            continue;
-                        };
-                        closest = distance;
-                        let local_point = local_ray.at(distance);
-                        let local_normal = bounds.normal_at(local_point);
-                        let mapping =
-                            cube_mapping(local_point, bounds, local_normal, voxel.position);
-                        result = Some(Hit {
-                            point: ray.at(distance),
-                            normal: local_normal.rotate_y(body.rotation),
-                            material: voxel.material,
-                            texture_uv: mapping.uv,
-                            texture_variant: voxel_texture_variant(voxel.position, voxel.material),
-                            tangent: mapping.tangent.rotate_y(body.rotation),
-                            bitangent: mapping.bitangent.rotate_y(body.rotation),
-                        });
-                    }
+                if let Some(voxel_index) = body.voxel_index_at(voxel_position) {
+                    let voxel = body.voxels[voxel_index];
+                    let bounds = voxel.bounds(body.voxel_scale);
+                    let Some((distance, _)) = bounds.intersect(local_ray, closest) else {
+                        break;
+                    };
+                    closest = distance;
+                    let local_point = local_ray.at(distance);
+                    let local_normal = bounds.normal_at(local_point);
+                    let mapping = cube_mapping(local_point, bounds, local_normal, voxel.position);
+                    result = Some(Hit {
+                        point: ray.at(distance),
+                        normal: local_normal.rotate_y(body.rotation),
+                        material: voxel.material,
+                        texture_uv: mapping.uv,
+                        texture_variant: voxel_texture_variant(voxel.position, voxel.material),
+                        tangent: mapping.tangent.rotate_y(body.rotation),
+                        bitangent: mapping.bitangent.rotate_y(body.rotation),
+                    });
+                    break;
                 }
 
                 let axis = if next_crossing[0] <= next_crossing[1]
@@ -278,7 +275,7 @@ impl Scene {
                 };
                 traversal_distance = next_crossing[axis];
                 next_crossing[axis] += crossing_delta[axis];
-                chunk_position = chunk_position.stepped(axis, steps[axis]);
+                voxel_position = voxel_position.stepped(axis, steps[axis]);
             }
         }
         result
