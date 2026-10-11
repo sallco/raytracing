@@ -58,7 +58,7 @@ cargo run --release -- --benchmark
 La simulación usa tiempo real y actualiza la animación a 30 pasos por segundo.
 Entre actualizaciones se reutiliza el último framebuffer para conservar la
 respuesta del HUD y los controles. La imagen CPU se escala a la ventana de
-`1024×576`; el HUD se dibuja después a resolución nativa.
+`1280×720`; el HUD se dibuja después a resolución nativa.
 
 ## Arquitectura
 

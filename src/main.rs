@@ -15,8 +15,8 @@ mod sky;
 mod texture;
 mod world;
 
-const WIDTH: i32 = 1024;
-const HEIGHT: i32 = 576;
+const WIDTH: i32 = 1280;
+const HEIGHT: i32 = 720;
 const RENDER_WIDTH: i32 = 768;
 const RENDER_HEIGHT: i32 = 432;
 
