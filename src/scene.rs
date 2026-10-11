@@ -201,11 +201,21 @@ impl Scene {
         }
     }
 
-    pub(crate) fn intersect(&self, ray: Ray, maximum: f32) -> Option<Hit> {
+    pub(crate) fn intersect(
+        &self,
+        ray: Ray,
+        maximum: f32,
+        preferred_body: Option<usize>,
+    ) -> Option<Hit> {
         let mut closest = maximum;
         let mut result = None;
 
-        for body in &self.bodies {
+        let preferred = preferred_body.filter(|&index| index < self.bodies.len());
+        let body_order = preferred
+            .into_iter()
+            .chain((0..self.bodies.len()).filter(|index| Some(*index) != preferred));
+        for body_index in body_order {
+            let body = &self.bodies[body_index];
             let local_ray = Ray {
                 origin: (ray.origin - body.center).rotate_y(-body.rotation),
                 direction: ray.direction.rotate_y(-body.rotation),

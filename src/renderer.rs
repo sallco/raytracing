@@ -9,7 +9,13 @@ use crate::{
 const SURFACE_BIAS: f32 = 0.003;
 const MAX_SECONDARY_BOUNCES: u8 = 2;
 
-pub(crate) fn render(scene: &Scene, camera: Camera, width: usize, height: usize) -> Vec<u8> {
+pub(crate) fn render(
+    scene: &Scene,
+    camera: Camera,
+    width: usize,
+    height: usize,
+    preferred_body: Option<usize>,
+) -> Vec<u8> {
     let mut pixels = vec![0; width * height * 4];
     let workers = std::thread::available_parallelism()
         .map_or(1, usize::from)
@@ -25,7 +31,8 @@ pub(crate) fn render(scene: &Scene, camera: Camera, width: usize, height: usize)
                 for (local_y, row) in stripe.chunks_mut(width * 4).enumerate() {
                     let y = start_y + local_y;
                     for x in 0..width {
-                        let color = trace(scene, camera.ray(x, y, width, height), 0);
+                        let color =
+                            trace(scene, camera.ray(x, y, width, height), 0, preferred_body);
                         let offset = x * 4;
                         row[offset..offset + 4].copy_from_slice(&color.to_rgba8());
                     }
@@ -36,11 +43,13 @@ pub(crate) fn render(scene: &Scene, camera: Camera, width: usize, height: usize)
     pixels
 }
 
-fn trace(scene: &Scene, ray: Ray, depth: u8) -> Rgb {
-    scene.intersect(ray, f32::INFINITY).map_or_else(
-        || background(scene, ray),
-        |hit| shade(scene, ray, hit, depth),
-    )
+fn trace(scene: &Scene, ray: Ray, depth: u8, preferred_body: Option<usize>) -> Rgb {
+    scene
+        .intersect(ray, f32::INFINITY, preferred_body)
+        .map_or_else(
+            || background(scene, ray),
+            |hit| shade(scene, ray, hit, depth, preferred_body),
+        )
 }
 
 fn background(scene: &Scene, ray: Ray) -> Rgb {
@@ -89,7 +98,7 @@ fn visible_orbits(scene: &Scene, ray: Ray) -> Rgb {
     Rgb::new(0.09, 0.19, 0.34) * strength
 }
 
-fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
+fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8, preferred_body: Option<usize>) -> Rgb {
     let material = &scene.materials[hit.material];
     let surface = material.sample_surface(hit.texture_uv, hit.texture_variant);
     let albedo = surface.albedo;
@@ -129,6 +138,7 @@ fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
                 direction: reflected_direction,
             },
             depth + 1,
+            preferred_body,
         );
         let grazing = (1.0 - (-ray.direction).dot(hit.normal).max(0.0)).powi(5);
         let strength = material.reflectivity + (1.0 - material.reflectivity) * grazing;
@@ -147,6 +157,7 @@ fn shade(scene: &Scene, ray: Ray, hit: Hit, depth: u8) -> Rgb {
                 direction,
             },
             depth + 1,
+            preferred_body,
         );
         color = color.mix(transmitted, material.transparency);
     }

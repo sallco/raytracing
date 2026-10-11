@@ -108,7 +108,8 @@ fn main() {
         }
         if dirty {
             let started = Instant::now();
-            let pixels = renderer::render(&scene, camera, WIDTH as usize, HEIGHT as usize);
+            let pixels =
+                renderer::render(&scene, camera, WIDTH as usize, HEIGHT as usize, selection);
             render_time_ms = started.elapsed().as_secs_f32() * 1_000.0;
             if let Err(error) = framebuffer.update_texture(&pixels) {
                 eprintln!("No fue posible actualizar el framebuffer: {error}");
@@ -142,7 +143,7 @@ fn benchmark() {
     let scene = scene::Scene::solar_system();
     let camera = camera::Camera::overview();
     let started = Instant::now();
-    let pixels = renderer::render(&scene, camera, WIDTH as usize, HEIGHT as usize);
+    let pixels = renderer::render(&scene, camera, WIDTH as usize, HEIGHT as usize, None);
     std::hint::black_box(pixels);
     let elapsed = started.elapsed().as_secs_f64();
     println!(
