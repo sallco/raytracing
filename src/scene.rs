@@ -98,7 +98,7 @@ impl Scene {
             Material::matte("Hielo de los anillos", Rgb::new(0.72, 0.68, 0.57), 0.44)
                 .specular(0.58)
                 .reflective(0.1, 0.15)
-                .transparent(0.08, 1.31)
+                .transparent(0.18, 1.31)
                 .textured(Texture::planet(
                     PlanetTexture::SaturnRing,
                     &[
@@ -157,9 +157,21 @@ impl Scene {
                     ],
                 )),
             Material::matte("Propulsor de iones", Rgb::new(0.25, 0.75, 1.0), 0.10)
-                .emissive(Rgb::new(2.5, 6.0, 9.0)),
+                .emissive(Rgb::new(2.5, 6.0, 9.0))
+                .textured(Texture::planet(
+                    PlanetTexture::IonEngine,
+                    &[SurfaceTexture::Metal046B],
+                )),
+            Material::matte("Cristal de la cabina", Rgb::new(0.16, 0.64, 0.86), 0.08)
+                .specular(0.95)
+                .reflective(0.05, 0.20)
+                .transparent(0.62, 1.52)
+                .textured(Texture::planet(
+                    PlanetTexture::Glass,
+                    &[SurfaceTexture::Metal061B],
+                )),
         ];
-        debug_assert_eq!(materials.len() - 1, material_id::ION_ENGINE);
+        debug_assert_eq!(materials.len() - 1, material_id::VIEWPORT_GLASS);
 
         Self {
             materials,

@@ -19,6 +19,7 @@ pub(crate) mod material_id {
     pub(crate) const SOLAR_PANEL: usize = 12;
     pub(crate) const SHIP_HULL: usize = 13;
     pub(crate) const ION_ENGINE: usize = 14;
+    pub(crate) const VIEWPORT_GLASS: usize = 15;
 }
 
 #[derive(Clone, Copy)]
@@ -391,11 +392,11 @@ fn spacecraft() -> CelestialBody {
 
     voxels.push(Voxel {
         position: GridPosition::new(0, 0, 6),
-        material: material_id::SHIP_HULL,
+        material: material_id::VIEWPORT_GLASS,
     });
     voxels.push(Voxel {
         position: GridPosition::new(0, 0, 5),
-        material: material_id::SHIP_HULL,
+        material: material_id::VIEWPORT_GLASS,
     });
 
     for y in -1..=1 {
