@@ -49,7 +49,7 @@ su nombre, tipo, cantidad de cubos y material predominante.
 
 ## Medir rendimiento
 
-El modo de medición genera un cuadro completo de `1024×576` sin abrir una ventana:
+El modo de medición genera el framebuffer CPU de `768×432` sin abrir una ventana:
 
 ```bash
 cargo run --release -- --benchmark
@@ -57,7 +57,8 @@ cargo run --release -- --benchmark
 
 La simulación usa tiempo real y actualiza la animación a 30 pasos por segundo.
 Entre actualizaciones se reutiliza el último framebuffer para conservar la
-respuesta del HUD y los controles.
+respuesta del HUD y los controles. La imagen CPU se escala a la ventana de
+`1024×576`; el HUD se dibuja después a resolución nativa.
 
 ## Arquitectura
 

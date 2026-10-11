@@ -17,6 +17,8 @@ mod world;
 
 const WIDTH: i32 = 1024;
 const HEIGHT: i32 = 576;
+const RENDER_WIDTH: i32 = 768;
+const RENDER_HEIGHT: i32 = 432;
 
 fn main() {
     material::initialize_color_lut();
@@ -34,7 +36,7 @@ fn main() {
     window.set_target_fps(60);
     window.set_exit_key(None);
 
-    let image = Image::gen_image_color(WIDTH, HEIGHT, Color::BLACK);
+    let image = Image::gen_image_color(RENDER_WIDTH, RENDER_HEIGHT, Color::BLACK);
     let mut framebuffer = match window.load_texture_from_image(&thread, &image) {
         Ok(texture) => texture,
         Err(error) => {
@@ -50,7 +52,7 @@ fn main() {
     let mut dirty = true;
     let mut animation_accumulator = 0.0_f32;
     let mut render_time_ms = 0.0;
-    let mut pixels = Vec::with_capacity(WIDTH as usize * HEIGHT as usize * 4);
+    let mut pixels = Vec::with_capacity(RENDER_WIDTH as usize * RENDER_HEIGHT as usize * 4);
 
     while !window.window_should_close() {
         animation_accumulator += window.get_frame_time().min(0.05);
@@ -113,8 +115,8 @@ fn main() {
             renderer::render_into(
                 &scene,
                 camera,
-                WIDTH as usize,
-                HEIGHT as usize,
+                RENDER_WIDTH as usize,
+                RENDER_HEIGHT as usize,
                 selection,
                 &mut pixels,
             );
@@ -127,7 +129,14 @@ fn main() {
         }
 
         let mut drawing = window.begin_drawing(&thread);
-        drawing.draw_texture(&framebuffer, 0, 0, Color::WHITE);
+        drawing.draw_texture_pro(
+            &framebuffer,
+            Rectangle::new(0.0, 0.0, RENDER_WIDTH as f32, RENDER_HEIGHT as f32),
+            Rectangle::new(0.0, 0.0, WIDTH as f32, HEIGHT as f32),
+            Vector2::zero(),
+            0.0,
+            Color::WHITE,
+        );
         drawing.draw_rectangle(12, 12, 250, 64, Color::new(2, 5, 12, 205));
         drawing.draw_text(
             &format!("{} FPS", drawing.get_fps()),
@@ -149,7 +158,7 @@ fn main() {
 
 fn benchmark() {
     let scene = scene::Scene::solar_system();
-    let mut pixels = Vec::with_capacity(WIDTH as usize * HEIGHT as usize * 4);
+    let mut pixels = Vec::with_capacity(RENDER_WIDTH as usize * RENDER_HEIGHT as usize * 4);
     benchmark_view(
         &scene,
         camera::Camera::overview(),
@@ -179,8 +188,8 @@ fn benchmark_view(
     renderer::render_into(
         scene,
         camera,
-        WIDTH as usize,
-        HEIGHT as usize,
+        RENDER_WIDTH as usize,
+        RENDER_HEIGHT as usize,
         selection,
         pixels,
     );
