@@ -9,14 +9,15 @@ use crate::{
 const SURFACE_BIAS: f32 = 0.003;
 const MAX_SECONDARY_BOUNCES: u8 = 2;
 
-pub(crate) fn render(
+pub(crate) fn render_into(
     scene: &Scene,
     camera: Camera,
     width: usize,
     height: usize,
     preferred_body: Option<usize>,
-) -> Vec<u8> {
-    let mut pixels = vec![0; width * height * 4];
+    pixels: &mut Vec<u8>,
+) {
+    pixels.resize(width * height * 4, 0);
     let workers = std::thread::available_parallelism()
         .map_or(1, usize::from)
         .clamp(1, 12)
@@ -40,7 +41,6 @@ pub(crate) fn render(
             });
         }
     });
-    pixels
 }
 
 fn trace(scene: &Scene, ray: Ray, depth: u8, preferred_body: Option<usize>) -> Rgb {
