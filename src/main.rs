@@ -149,22 +149,45 @@ fn main() {
 
 fn benchmark() {
     let scene = scene::Scene::solar_system();
-    let camera = camera::Camera::overview();
-    let started = Instant::now();
     let mut pixels = Vec::with_capacity(WIDTH as usize * HEIGHT as usize * 4);
-    renderer::render_into(
+    benchmark_view(
         &scene,
+        camera::Camera::overview(),
+        None,
+        "Vista general",
+        &mut pixels,
+    );
+    for (index, body) in scene.bodies.iter().enumerate() {
+        benchmark_view(
+            &scene,
+            camera::Camera::focused(body.center, body.focus_distance),
+            Some(index),
+            body.name,
+            &mut pixels,
+        );
+    }
+}
+
+fn benchmark_view(
+    scene: &scene::Scene,
+    camera: camera::Camera,
+    selection: Option<usize>,
+    label: &str,
+    pixels: &mut Vec<u8>,
+) {
+    let started = Instant::now();
+    renderer::render_into(
+        scene,
         camera,
         WIDTH as usize,
         HEIGHT as usize,
-        None,
-        &mut pixels,
+        selection,
+        pixels,
     );
-    std::hint::black_box(pixels);
+    std::hint::black_box(&pixels);
     let elapsed = started.elapsed().as_secs_f64();
     println!(
-        "{} voxeles | {:.1} ms | {:.2} FPS equivalentes",
-        scene.total_voxels(),
+        "{label}: {:.1} ms | {:.2} FPS equivalentes",
         elapsed * 1_000.0,
         elapsed.recip()
     );

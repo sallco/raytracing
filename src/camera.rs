@@ -32,6 +32,13 @@ impl Camera {
         }
     }
 
+    pub(crate) fn focused(target: Vec3, distance: f32) -> Self {
+        let mut camera = Self::overview();
+        camera.target = target;
+        camera.distance = distance;
+        camera
+    }
+
     pub(crate) fn position(self) -> Vec3 {
         let horizontal = self.distance * self.pitch.cos();
         self.target
